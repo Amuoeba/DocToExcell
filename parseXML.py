@@ -15,9 +15,18 @@ class Document():
         """
         self.doc_name = doc_path
         self.document = open(doc_path,"rb")
-        self.doc_soup = BeautifulSoup(self.document,"html")        
+        self.doc_soup = BeautifulSoup(self.document,'html.parser')
+        self.rows = None        
         self.textEntries = self.findAllTextEntries(self.doc_soup)
         self.textByRow = self.findRowText()
+        self.textByRow1 = self.findRows1()
+        self.Naziv = None
+        self.Sifra = None
+        self.OpisIzdelka = self.FindSimple("OPIS IZDELKA")
+        self.Sestavine = self.FindSimple("SESTAVINE")
+        self.NetoKolicina = self.FindSimple("NETO KOLIČINA")
+        self.FindNazivSifra()
+        
    
     def findAllTextEntries(self,soup):
         """Extract just text entries sequentially"""
@@ -46,9 +55,69 @@ class Document():
             tx = self.findAllTextEntries(row)
             text_by_row.append(tx)
         return text_by_row
-
     
-   
+    def findRows1(self):
+        txtEntries = self.doc_soup.find_all("font")#attrs={"lang":"sl-SI"})
+        rows = []
+        for ele in txtEntries:
+            row = botomUp(ele)
+            if row:
+                rows.append(row)
+        text_by_row = []
+        aux = set()
+        self.rows = rows
+        for row in rows:
+            tx = self.findAllTextEntries(row)
+            aux_tx = str(tx)
+            if aux_tx not in aux:
+                text_by_row.append(tx)
+                aux.add(aux_tx)
+            
+        return text_by_row
+
+    def FindNazivSifra(self):
+        text = " ".join(self.textByRow1[0])
+        Rnaziv = re.compile("(?<=PROIZVODA )(.*)(?= Šifra)")
+        Ršifra = re.compile("(?<=Šifra: )(.*)(?= Izdaja)")
+        
+        naziv = re.search(Rnaziv,text)
+        sifra = re.search(Ršifra,text)
+        
+        if naziv:
+            naziv = naziv.group(0)
+            self.Naziv = naziv
+        if sifra:
+            sifra = sifra.group(0)
+            self.Sifra = sifra
+    
+    def FindSimple(self,pattern):
+        for row in self.textByRow1:
+            for item in enumerate(row):
+                if item[1] == pattern:
+                    opis = row[item[0]+1:]
+                    opis=" ".join(opis)
+                    return opis       
+        return None
+ 
+    
+    
+    
+def botomUp(textele):
+    if textele:
+        if textele.name == "tr":
+            return textele
+        else:
+            return botomUp(textele.parent)
+    else:
+        return None
+    
+
+class RegExTable():
+    def __init__(self):
+        self.SecifikacijaProizvoda = re.compile("")
+        
+
+
 #    def preety_print(self):
 #        """Prints the extracted features by row"""
 #        for row in self.rows:

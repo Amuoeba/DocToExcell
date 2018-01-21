@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import parseXML as parser
 import os
+import testTools as tt
 
 documents = []
 excels = []
@@ -15,6 +16,10 @@ for i in documents:
     assert isinstance(i,parser.Document)
     print("###############")
     print(i.doc_name)
-    for j in i.textByRow:
+    
+    for j in i.textByRow1:
         print(j)
     
+tt.testAttrPressence(documents,'SENZORIČNE ')
+tt.testAttrFound(documents)
+

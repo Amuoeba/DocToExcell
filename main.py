@@ -22,4 +22,4 @@ for i in documents:
     
 tt.testAttrPressence(documents,'SENZORIČNE ')
 tt.testAttrFound(documents)
-
+tt.testSections(documents)

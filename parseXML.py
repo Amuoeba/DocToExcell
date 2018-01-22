@@ -13,6 +13,15 @@ class Document():
         Provide a XML document that you want to parse, and a type ofdocument (table or text)
         example use:\n doc = Document("./DocData/SP 40408 Bio keksi pomaranča 150 g.xml","table")
         """
+        self.Markers = {"opis_izdelka":re.compile("OPIS IZDELKA",re.IGNORECASE),
+                        "sestavine":re.compile("SESTAVINE",re.IGNORECASE),
+                        "neto_kolicina":re.compile("neto količina",re.IGNORECASE),
+                        "aroma":re.compile("aroma",re.IGNORECASE),
+                        "videz":re.compile("videz",re.IGNORECASE),
+                        "zakonodaja":re.compile("zakon(.*)",re.IGNORECASE),
+                        "mikrobioloske_zahteve":re.compile("mikrobiološke zahteve",re.IGNORECASE),
+                        "fizikalno_kemijske_zahteve":re.compile("FIZIKALNO KEMIJSKE ZAHTEVE",re.IGNORECASE),
+                        "hranilna_vrednost":re.compile("(.*)HRANILNA VREDNOST",re.IGNORECASE)}
         self.doc_name = doc_path
         self.document = open(doc_path,"rb")
         self.doc_soup = BeautifulSoup(self.document,'html.parser')
@@ -22,9 +31,13 @@ class Document():
         self.textByRow1 = self.findRows1()
         self.Naziv = None
         self.Sifra = None
-        self.OpisIzdelka = self.FindSimple("OPIS IZDELKA")
-        self.Sestavine = self.FindSimple("SESTAVINE")
-        self.NetoKolicina = self.FindSimple("NETO KOLIČINA")
+        self.OpisIzdelka = self.FindSimple(self.Markers["opis_izdelka"])
+        self.Sestavine = self.FindSimple(self.Markers["sestavine"])
+        self.NetoKolicina = self.FindSimple(self.Markers["neto_kolicina"])
+        self.Aroma = self.FindSimple(self.Markers["aroma"])
+        self.Videz = self.FindSimple(self.Markers["videz"])
+        self.Zakonodaja = self.FindSimple(self.Markers["zakonodaja"])
+        self.Sections = self.FindSections()        
         self.FindNazivSifra()
         
    
@@ -41,10 +54,13 @@ class Document():
 #                    text = re.sub(" +"," ",text)
 #                    print(text)
         
-        txtEntries = soup.find_all(attrs={"lang":"sl-SI"})
+        
+        txtEntries = soup.find_all("td")#(attrs={"lang":"sl-SI"})
         txtEntries = [x  for x in txtEntries if x.text != "\n"]
         txtEntries = [re.sub("[\t\n]"," ",x.text) for x in txtEntries]
         txtEntries = [re.sub(" +"," ",x) for x in txtEntries]
+        txtEntries = [x.rstrip() for x in txtEntries]
+        txtEntries = [x.lstrip() for x in txtEntries]
         return txtEntries
     
     def findRowText(self):
@@ -80,7 +96,7 @@ class Document():
         Rnaziv = re.compile("(?<=PROIZVODA )(.*)(?= Šifra)")
         Ršifra = re.compile("(?<=Šifra: )(.*)(?= Izdaja)")
         
-        naziv = re.search(Rnaziv,text)
+        naziv = re.search(Rnaziv,text)    
         sifra = re.search(Ršifra,text)
         
         if naziv:
@@ -91,13 +107,41 @@ class Document():
             self.Sifra = sifra
     
     def FindSimple(self,pattern):
+        matches = []
         for row in self.textByRow1:
+            
             for item in enumerate(row):
-                if item[1] == pattern:
-                    opis = row[item[0]+1:]
-                    opis=" ".join(opis)
-                    return opis       
-        return None
+                if bool(pattern.match(item[1])):
+                    match = row[item[0]+1:]
+                    match=" ".join(match)
+                    matches.append(match)
+        
+        if matches == []:
+            return None
+        else:
+            return matches
+    
+    def FindSections(self):
+        global_identifier = None
+        local_identifier = None
+        section = []
+        global_sections = {}
+        for row in self.textByRow1:
+            first = row[0]
+            for m in self.Markers:
+                marker = self.Markers[m]
+                if bool(marker.match(first)):
+                    local_identifier = m
+                
+            if global_identifier != local_identifier:
+                global_sections[global_identifier] = section
+                section = []
+                section.append(row)
+            else:
+                section.append(row)
+                
+            global_identifier = local_identifier
+        return global_sections
  
     
     
@@ -129,6 +173,16 @@ class RegExTable():
 #                col_st = " ".join(col_st)
 #                row_st.append(col_st)
 #            print(row_st)
+
+
+
+
+class Section():
+    def __init__(self,name,data):
+        self.name = name
+        self.data = data
+
+
 
 #class Row():
 #    def __init__(self,columns):

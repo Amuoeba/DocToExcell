@@ -35,7 +35,7 @@ def testAttrFound(docList):
         sifra = doc.Sifra
         opisIzdelka = doc.OpisIzdelka
         sestavine = doc.Sestavine
-        netoKolicina = doc.NetoKolicina
+#        netoKolicina = doc.NetoKolicina
         videz = doc.Videz
         aroma = doc.Aroma
         zakonodaja = doc.Zakonodaja
@@ -44,7 +44,7 @@ def testAttrFound(docList):
         print("Sifra: ",colored(sifra,chooseColor(sifra)))
         print("Opis Izdelka: ",colored(opisIzdelka,chooseColor(opisIzdelka)))
         print("Sestavine: ",colored(sestavine,chooseColor(sestavine)))
-        print("Neto Količina: ",colored(netoKolicina,chooseColor(netoKolicina)))
+#        print("Neto Količina: ",colored(netoKolicina,chooseColor(netoKolicina)))
         print("Videz: ",colored(videz,chooseColor(videz)))
         print("Aroma: ",colored(aroma,chooseColor(aroma)))
         print("Zakonodaja: ",colored(zakonodaja,chooseColor(zakonodaja)))
@@ -57,6 +57,54 @@ def testSections(doclist):
             print("---------------------")
             print("Section: ", section, "\n" )
             print(document.Sections[section])
+            print("---------------------")
+
+def testSingleSections(doclist,section):
+    for document in doclist:
+        assert isinstance(document,parseXML.Document)
+        if section in document.Sections:
+            print("######### ", document.doc_name)    
+            print("---------------------")
+            print("Section: ", colored(section,"green"), "\n" )
+            print(document.Sections[section])
+            print("---------------------")
+        else:
+            print("######### ", document.doc_name)
+            print("---------------------")
+            print(colored(section + " not present ","red"))
+            print("---------------------")
+
+def testHranilnaVrednost(doclist):
+    for document in doclist:
+        assert isinstance(document,parseXML.Document)
+
+        if document.HranilnaVrednost:
+            print("######### ", document.doc_name)
+            print("---------------------")
+            for v in document.HranilnaVrednost:
+                for i in v:           
+                    print(colored(i,"green"),": ",v[i])
+            print("---------------------")
+                    
+        else:
+            print("######### ", document.doc_name)
+            print("---------------------")
+            print(colored("Hranilna vrednost" + " not present ","red"))
+            print("---------------------")
+def testMikrobiloskeZahteve(doclist):
+    for document in doclist:
+        assert isinstance(document,parseXML.Document)
+        if document.MikrobiloskeZahteve:
+            print("######### ", document.doc_name)
+            print("---------------------")
+            for i in document.MikrobiloskeZahteve:
+                for j in i:
+                    print(colored(j,"green"),": ",i[j])
+            print("---------------------")
+        else:
+            print("######### ", document.doc_name)
+            print("---------------------")
+            print(colored("Mikrobiloške zahteve" + " not present ","red"))
             print("---------------------")
             
         

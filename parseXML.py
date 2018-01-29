@@ -46,8 +46,10 @@ class Document():
         self._HranilnaVrednostTemplate_ = None
         self.HranilnaVrednost = None
         self.MikrobiloskeZahteve = None
+        self.FizikalnoKemijskeZahteve =None
         self.ProcessSection_HRANILNA_VREDNOST()
         self.ProcessSection_MIKROBIOLOSKE_ZAHTEVE()
+        self.ProcessSection_FIZIKALNO_KEMIJSKE_ZAHTEVE()
         
    
     def findAllTextEntries(self,soup):
@@ -202,6 +204,24 @@ class Document():
             
         self.MikrobiloskeZahteve = pathogens
         return pathogens
+    
+    def ProcessSection_FIZIKALNO_KEMIJSKE_ZAHTEVE(self):
+        if "fizikalno_kemijske_zahteve" in self.Sections:
+            fiz_kem_zaht = self.Sections["fizikalno_kemijske_zahteve"]        
+        else:
+            return None
+        zahteve = []
+        for entry in fiz_kem_zaht:
+            if entry and entry[0] != "/":
+                val = entry[0]
+                zahteve.append({val:entry[1]})
+            
+        self.FizikalnoKemijskeZahteve = zahteve
+        return zahteve
+        
+    
+    
+    
 #        def defineDataShape():
             
 #        section = self.Sections("hranilna_vrednost")

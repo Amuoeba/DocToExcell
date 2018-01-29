@@ -64,15 +64,15 @@ def testSingleSections(doclist,section):
         assert isinstance(document,parseXML.Document)
         if section in document.Sections:
             print("######### ", document.doc_name)    
-            print("---------------------")
+            print("---------------------%%%%%%%%%%%%%%%%%%")
             print("Section: ", colored(section,"green"), "\n" )
             print(document.Sections[section])
-            print("---------------------")
+            print("---------------------%%%%%%%%%%%%%%%%%%")
         else:
             print("######### ", document.doc_name)
-            print("---------------------")
-            print(colored(section + " not present ","red"))
-            print("---------------------")
+            print("---------------------%%%%%%%%%%%%%%%%%%")
+            print(colored(section + " not present " ,"red"))
+            print("---------------------%%%%%%%%%%%%%%%%%%")
 
 def testHranilnaVrednost(doclist):
     for document in doclist:
@@ -91,6 +91,7 @@ def testHranilnaVrednost(doclist):
             print("---------------------")
             print(colored("Hranilna vrednost" + " not present ","red"))
             print("---------------------")
+            
 def testMikrobiloskeZahteve(doclist):
     for document in doclist:
         assert isinstance(document,parseXML.Document)
@@ -107,6 +108,21 @@ def testMikrobiloskeZahteve(doclist):
             print(colored("Mikrobiloške zahteve" + " not present ","red"))
             print("---------------------")
             
+def testFizikalnoKemijskeZahteve(doclist):
+    for document in doclist:
+        assert isinstance(document,parseXML.Document)
+        if document.FizikalnoKemijskeZahteve:
+            print("######### ", document.doc_name)
+            print("---------------------")
+            for i in document.FizikalnoKemijskeZahteve:
+                for j in i:
+                    print(colored(j,"green"),": ",i[j])
+            print("---------------------")
+        else:
+            print("######### ", document.doc_name)
+            print("---------------------")
+            print(colored("Fizikalno kemijske zahteve" + " not present ","red"))
+            print("---------------------")
         
         
                           

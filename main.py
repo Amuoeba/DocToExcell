@@ -26,4 +26,5 @@ tt.testSections(documents)
 
 tt.testHranilnaVrednost(documents)
 tt.testMikrobiloskeZahteve(documents)
-tt.testSingleSections(documents,"fizikalno_kemijske_zahteve")
+tt.testFizikalnoKemijskeZahteve(documents)
+tt.testSingleSections(documents,"pakiranje")

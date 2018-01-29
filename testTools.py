@@ -123,7 +123,71 @@ def testFizikalnoKemijskeZahteve(doclist):
             print("---------------------")
             print(colored("Fizikalno kemijske zahteve" + " not present ","red"))
             print("---------------------")
-        
-        
-                          
+
+def testPakiranje(doclist):
+    for document in doclist:
+        assert isinstance(document, parseXML.Document)
+        if document.Pakiranje:
+            print("######### ", document.doc_name)
+            print("---------------------")
+            for i in document.Pakiranje:                
+                print(colored(i,"green"),": ",document.Pakiranje[i])
+            print("---------------------")
+        else:
+            print("######### ", document.doc_name)
+            print("---------------------")
+            print(colored("Pakiranje" + " not present ","red"))
+            print("---------------------")
+
+def testZakonodaja(doclist):
+    for document in doclist:
+        if document.Zakonodaja:
+            print("######### ", document.doc_name)
+            print("---------------------")
+            print(colored("Zakonodaja","green"),": ",document.Zakonodaja)
+            print("---------------------")
+        else:
+            print("######### ", document.doc_name)
+            print("---------------------")
+            print(colored("Zakonodaja" + " not present ","red"))
+            print("---------------------")
     
+def testAll(doclist):
+    def chooseColor(value):
+        if value:
+            return "green"
+        else:
+            return "red"
+    
+    for document in doclist:        
+        assert isinstance(document,parseXML.Document)
+        naziv = document.Naziv
+        sifra = document.Sifra
+        hranilna = document.HranilnaVrednost
+        mikrobioloske = document.MikrobiloskeZahteve
+        fizkem = document.FizikalnoKemijskeZahteve
+        pakiranje = document.Pakiranje
+        zakonodaja = document.Zakonodaja
+        sestavine = document.Sestavine
+        opis = document.OpisIzdelka
+        aroma = document.Aroma
+        videz = document.Videz
+        print("###### DOCNAME: ",document.doc_name)
+        print("Naziv: ",colored(naziv,chooseColor(naziv)))
+        print("Sifra: ",colored(sifra,chooseColor(sifra)))
+        print("Opis Izdelka: ",colored(opis,chooseColor(opis)))
+        print("Sestavine: ",colored(sestavine,chooseColor(sestavine)))
+#        print("Neto Količina: ",colored(netoKolicina,chooseColor(netoKolicina)))
+        print("Videz: ",colored(videz,chooseColor(videz)))
+        print("Aroma: ",colored(aroma,chooseColor(aroma)))
+        print("Hranilna vrednost: ",colored(hranilna,chooseColor(hranilna)))
+        print("Mikrobiloške zahteve: ",colored(mikrobioloske,chooseColor(mikrobioloske)))
+        print("Fizikalno kemijske: ",colored(fizkem,chooseColor(fizkem)))
+        print("Pakiranje: ",colored(pakiranje,chooseColor(pakiranje)))
+        print("Zakonodaja: ",colored(zakonodaja,chooseColor(zakonodaja)))
+        
+        
+        
+        
+        
+        

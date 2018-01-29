@@ -32,24 +32,26 @@ class Document():
         self.rows = None        
         self.textEntries = self.findAllTextEntries(self.doc_soup)
         self.textByRow = self.findRowText()
-        self.textByRow1 = self.findRows1()
+        self.textByRow1 = self.findRows1()      
+        self._HranilnaVrednostTemplate_ = None
         self.Naziv = None
         self.Sifra = None
-        self.OpisIzdelka = self.FindSimple(self.Markers["opis_izdelka"])
-        self.Sestavine = self.FindSimple(self.Markers["sestavine"])
-#        self.NetoKolicina = self.FindSimple(self.Markers["neto_kolicina"])
-        self.Aroma = self.FindSimple(self.Markers["aroma"])
-        self.Videz = self.FindSimple(self.Markers["videz"])
-        self.Zakonodaja = self.FindSimple(self.Markers["zakonodaja"])
-        self.Sections = self.FindSections()        
-        self.FindNazivSifra()
-        self._HranilnaVrednostTemplate_ = None
         self.HranilnaVrednost = None
         self.MikrobiloskeZahteve = None
         self.FizikalnoKemijskeZahteve =None
+        self.Pakiranje = None
+        self.Zakonodaja = None
+        self.Sestavine = self.FindSimple(self.Markers["sestavine"])
+        self.OpisIzdelka = self.FindSimple(self.Markers["opis_izdelka"])
+        self.Aroma = self.FindSimple(self.Markers["aroma"])
+        self.Videz = self.FindSimple(self.Markers["videz"])        
+        self.Sections = self.FindSections()        
+        self.FindNazivSifra()
         self.ProcessSection_HRANILNA_VREDNOST()
         self.ProcessSection_MIKROBIOLOSKE_ZAHTEVE()
         self.ProcessSection_FIZIKALNO_KEMIJSKE_ZAHTEVE()
+        self.ProcessSection_PAKIRANJE()
+        self.ProcessSection_ZAKONODAJA()
         
    
     def findAllTextEntries(self,soup):
@@ -219,8 +221,56 @@ class Document():
         self.FizikalnoKemijskeZahteve = zahteve
         return zahteve
         
+    def ProcessSection_PAKIRANJE(self):
+        markers = {"neto":re.compile("neto koli[a-ž]*?",re.IGNORECASE),
+                   "embalaža":re.compile("embalaža",re.IGNORECASE),
+                   "tip MPE":re.compile("tip mpe",re.IGNORECASE),
+                   "tip TP":re.compile("tip tp",re.IGNORECASE),
+                   "tip KP":re.compile("tip kp",re.IGNORECASE),
+                   "dimenzija MPE":re.compile("dime[a-ž]*? mpe",re.IGNORECASE),
+                   "dimenzija TP":re.compile("dime[a-ž]*? tp",re.IGNORECASE),
+                   "dimenzija KP":re.compile("dime[a-ž]*? kp",re.IGNORECASE),
+                   "število MPE":re.compile("število mpe na",re.IGNORECASE),
+                   "število plasti na paleti":re.compile("število plasti na pale",re.IGNORECASE),
+                   "način skladiščenja in transporta":re.compile("način skladiščenja in tran",re.IGNORECASE),
+                   "rok uporabe":re.compile("rok upo",re.IGNORECASE)}
+        
+        if "pakiranje" in self.Sections:
+            pakiranje = self.Sections["pakiranje"]
+        else:
+            return None
+        
+        concat_pakiranje = []
+        for i in pakiranje:
+            concat_pakiranje = concat_pakiranje + i
+        
+        pakiranje_values = {}
+        
+        for ele in enumerate(concat_pakiranje):
+            for marker in markers:
+                m = markers[marker]
+                if bool(re.match(m,ele[1])):
+                    pakiranje_values[marker] = concat_pakiranje[ele[0]+1]
+                    
+        self.Pakiranje = pakiranje_values
+        
+        return  pakiranje_values
     
-    
+    def ProcessSection_ZAKONODAJA(self):
+        if "zakonodaja" in self.Sections:
+            zakonodaja = self.Sections["zakonodaja"]
+        else:
+            return None
+        
+        m = re.compile("zakonske zahteve",re.IGNORECASE)
+        zakonodaja_concat = []
+        for i in zakonodaja:
+            zakonodaja_concat = zakonodaja_concat + i
+        
+        zakonodaja_concat = [x for x in zakonodaja_concat if not bool(re.match(m,x))]
+        zakonodaja_concat = " ".join(zakonodaja_concat)
+        self.Zakonodaja = zakonodaja_concat        
+        return zakonodaja_concat
     
 #        def defineDataShape():
             

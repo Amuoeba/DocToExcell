@@ -23,8 +23,10 @@ for i in documents:
 tt.testAttrPressence(documents,'SENZORIČNE ')
 tt.testAttrFound(documents)
 tt.testSections(documents)
-
 tt.testHranilnaVrednost(documents)
 tt.testMikrobiloskeZahteve(documents)
 tt.testFizikalnoKemijskeZahteve(documents)
-tt.testSingleSections(documents,"pakiranje")
+tt.testPakiranje(documents)
+tt.testZakonodaja(documents)
+tt.testSingleSections(documents,"aktivne_učinkovine")
+tt.testAll(documents)

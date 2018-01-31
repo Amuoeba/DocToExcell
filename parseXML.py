@@ -170,7 +170,7 @@ class Document():
             hran_vrednosti = self.Sections["hranilna_vrednost"]
         else:
             return None        
-        data = []
+        data = {}
         for entry in hran_vrednosti:
             values = []
             v = re.compile("([0-9]+,[0-9]+)(?: *)([a-z]*)|([0-9]+)(?: *)([a-z]*)",re.IGNORECASE)
@@ -186,11 +186,14 @@ class Document():
                     values = values + vrednosti            
  
             values = list(map(getMatchedGroup,values))
-            data.append({hranilo:values})
+#            data.append({hranilo:values})
+            data[hranilo] = values
             
-        self._HranilnaVrednostTemplate_ = data[0]
-        self.HranilnaVrednost = data[1:]
-        return data[0],data[1:]
+        self._HranilnaVrednostTemplate_ = data[None]
+        if None in data:
+            del data[None]
+        self.HranilnaVrednost = data
+        return data
     
     
     def ProcessSection_MIKROBIOLOSKE_ZAHTEVE(self):
@@ -199,10 +202,10 @@ class Document():
         
         else:
             return None
-        pathogens = []
+        pathogens = {}
         for entry in mik_zaht:
             bact = entry[0]
-            pathogens.append({bact:entry[1]})
+            pathogens[bact] = entry[1]
             
         self.MikrobiloskeZahteve = pathogens
         return pathogens
@@ -212,11 +215,12 @@ class Document():
             fiz_kem_zaht = self.Sections["fizikalno_kemijske_zahteve"]        
         else:
             return None
-        zahteve = []
+        zahteve = {}
         for entry in fiz_kem_zaht:
             if entry and entry[0] != "/":
                 val = entry[0]
-                zahteve.append({val:entry[1]})
+#                zahteve.append({val:entry[1]})
+                zahteve[val] = entry[1]
             
         self.FizikalnoKemijskeZahteve = zahteve
         return zahteve

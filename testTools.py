@@ -81,9 +81,8 @@ def testHranilnaVrednost(doclist):
         if document.HranilnaVrednost:
             print("######### ", document.doc_name)
             print("---------------------")
-            for v in document.HranilnaVrednost:
-                for i in v:           
-                    print(colored(i,"green"),": ",v[i])
+            for v in document.HranilnaVrednost:                
+                print(colored(v,"green"),": ",document.HranilnaVrednost[v])
             print("---------------------")
                     
         else:
@@ -99,8 +98,7 @@ def testMikrobiloskeZahteve(doclist):
             print("######### ", document.doc_name)
             print("---------------------")
             for i in document.MikrobiloskeZahteve:
-                for j in i:
-                    print(colored(j,"green"),": ",i[j])
+                print(colored(i,"green"),": ",document.MikrobiloskeZahteve[i])
             print("---------------------")
         else:
             print("######### ", document.doc_name)
@@ -115,8 +113,7 @@ def testFizikalnoKemijskeZahteve(doclist):
             print("######### ", document.doc_name)
             print("---------------------")
             for i in document.FizikalnoKemijskeZahteve:
-                for j in i:
-                    print(colored(j,"green"),": ",i[j])
+                print(colored(i,"green"),": ",document.FizikalnoKemijskeZahteve[i])
             print("---------------------")
         else:
             print("######### ", document.doc_name)

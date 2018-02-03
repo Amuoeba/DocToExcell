@@ -36,8 +36,8 @@ def testAttrFound(docList):
         opisIzdelka = doc.OpisIzdelka
         sestavine = doc.Sestavine
 #        netoKolicina = doc.NetoKolicina
-        videz = doc.Videz
-        aroma = doc.Aroma
+        videz = doc.Izgled
+        aroma = doc.Vonj
         zakonodaja = doc.Zakonodaja
         print("###### DOCNAME: ",doc.doc_name)
         print("Naziv: ",colored(naziv,chooseColor(naziv)))
@@ -167,8 +167,9 @@ def testAll(doclist):
         zakonodaja = document.Zakonodaja
         sestavine = document.Sestavine
         opis = document.OpisIzdelka
-        aroma = document.Aroma
-        videz = document.Videz
+        aroma = document.Vonj
+        videz = document.Izgled
+        aktivneU = document.AktivneUcinkovine
         print("###### DOCNAME: ",document.doc_name)
         print("Naziv: ",colored(naziv,chooseColor(naziv)))
         print("Sifra: ",colored(sifra,chooseColor(sifra)))
@@ -180,6 +181,7 @@ def testAll(doclist):
         print("Hranilna vrednost: ",colored(hranilna,chooseColor(hranilna)))
         print("Mikrobiloške zahteve: ",colored(mikrobioloske,chooseColor(mikrobioloske)))
         print("Fizikalno kemijske: ",colored(fizkem,chooseColor(fizkem)))
+        print("Aktivne  ucinkovine: ", colored(aktivneU,chooseColor(aktivneU)))
         print("Pakiranje: ",colored(pakiranje,chooseColor(pakiranje)))
         print("Zakonodaja: ",colored(zakonodaja,chooseColor(zakonodaja)))
         

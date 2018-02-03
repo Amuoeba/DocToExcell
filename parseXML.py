@@ -38,13 +38,14 @@ class Document():
         self.Sifra = None
         self.HranilnaVrednost = None
         self.MikrobiloskeZahteve = None
-        self.FizikalnoKemijskeZahteve =None
+        self.FizikalnoKemijskeZahteve = None
+        self.AktivneUcinkovine = None
         self.Pakiranje = None
         self.Zakonodaja = None
         self.Sestavine = self.FindSimple(self.Markers["sestavine"])
         self.OpisIzdelka = self.FindSimple(self.Markers["opis_izdelka"])
-        self.Aroma = self.FindSimple(self.Markers["aroma"])
-        self.Videz = self.FindSimple(self.Markers["videz"])        
+        self.Vonj = self.FindSimple(self.Markers["aroma"])
+        self.Izgled = self.FindSimple(self.Markers["videz"])        
         self.Sections = self.FindSections()        
         self.FindNazivSifra()
         self.ProcessSection_HRANILNA_VREDNOST()
@@ -52,7 +53,23 @@ class Document():
         self.ProcessSection_FIZIKALNO_KEMIJSKE_ZAHTEVE()
         self.ProcessSection_PAKIRANJE()
         self.ProcessSection_ZAKONODAJA()
-        
+        self.ProcessSection_AKTIVNE_UCINKOVINE()
+    
+    def listAttributes(self):
+        attrList = ["Naziv","Sifra","Izgled","Vonj","Zakonodaja","Sestavine","OpisIzdelka"]
+        if self.HranilnaVrednost:
+            for i in self.HranilnaVrednost:
+                attrList.append(i)
+        if self.MikrobiloskeZahteve:
+            for i in self.MikrobiloskeZahteve:
+                attrList.append(i)
+        if self.FizikalnoKemijskeZahteve:
+            for i in self.FizikalnoKemijskeZahteve:
+                attrList.append(i)
+        if self.Pakiranje:
+            for i in self.Pakiranje:
+                attrList.append(i)        
+        return attrList
    
     def findAllTextEntries(self,soup):
         """Extract just text entries sequentially"""
@@ -276,6 +293,26 @@ class Document():
         self.Zakonodaja = zakonodaja_concat        
         return zakonodaja_concat
     
+    def ProcessSection_AKTIVNE_UCINKOVINE(self):
+        if "aktivne_učinkovine" in self.Sections:
+            akt_uc = self.Sections["aktivne_učinkovine"]
+        else:
+            return None
+        valRegex = re.compile("([0-9]+)(?: *)((?!\d)\w{1,3})|([0-9]+,[0-9]+)(?: *)((?!\d)\w{1,3})",re.IGNORECASE | re.UNICODE)
+        
+        aktivne_uc = {}
+        
+        for ele in akt_uc[1:-1]:
+            ucinkovina = ele[0]
+            values = []
+            for v in ele[1:]:
+                val = re.findall(valRegex,v)
+                val = list(map(getMatchedGroup,val))
+                values = values + val
+            aktivne_uc[ucinkovina] = values
+        
+        self.AktivneUcinkovine = aktivne_uc
+        return aktivne_uc
 #        def defineDataShape():
             
 #        section = self.Sections("hranilna_vrednost")

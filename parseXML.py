@@ -149,7 +149,7 @@ class Document():
         if matches == []:
             return None
         else:
-            return matches
+            return "".join(matches)
     
     def FindSections(self):
         global_identifier = None

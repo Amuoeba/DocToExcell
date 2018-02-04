@@ -2,6 +2,7 @@
 import parseXML as parser
 import os
 import testTools as tt
+import createExcel
 
 documents = []
 excels = []
@@ -30,3 +31,10 @@ tt.testPakiranje(documents)
 tt.testZakonodaja(documents)
 tt.testSingleSections(documents,"aktivne_učinkovine")
 tt.testAll(documents)
+
+
+writer = createExcel.writeExcell(None)
+for ele in documents:
+    writer.createDocDataframe(ele)
+print (writer.dataframe)
+writer.write("test.xlsx")

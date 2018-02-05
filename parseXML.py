@@ -2,8 +2,9 @@
 import os
 from bs4 import BeautifulSoup
 import re
-
-
+from pandas import DataFrame
+import pandas as pd
+import numpy as np
 
 
 
@@ -54,6 +55,7 @@ class Document():
         self.ProcessSection_PAKIRANJE()
         self.ProcessSection_ZAKONODAJA()
         self.ProcessSection_AKTIVNE_UCINKOVINE()
+        self.Dataframes = self.PrepareDataFrames()
     
     def listAttributes(self):
         attrList = ["Naziv","Sifra","Izgled","Vonj","Zakonodaja","Sestavine","OpisIzdelka"]
@@ -313,6 +315,83 @@ class Document():
         
         self.AktivneUcinkovine = aktivne_uc
         return aktivne_uc
+    
+    def PrepareDataFrames(self):
+        dataframes = {}
+        dataframes["Šifra"] = DataFrame({"Šifra":[self.Sifra]})
+        dataframes["Naziv"] = DataFrame({"Naziv":[self.Naziv]})
+        dataframes["Skupina"] = DataFrame({"Skupina":["/"]})
+        dataframes["Opis"] = DataFrame({"Opis":[self.OpisIzdelka]})
+        dataframes["Sestavine"] = DataFrame({"Sestavine":[self.Sestavine]})
+        dataframes["Izgled"] = DataFrame({"Izgled":[self.Izgled]})
+        dataframes["Okus In Vonj"] = DataFrame({"Okus in Vonj":[self.Vonj]})
+        dataframes["Zakonodaja"] = DataFrame({"Zakonodaja":[self.Zakonodaja]})
+        dataframes["Mikrobiološke Zahteve"] = self.DFmikrobioloske()
+        dataframes["Fizikalno Kemijske Zahteve"] = self.DFfizikalno_kemijske()
+        dataframes["Hranilna Vrednost"] = self.DFhranilna_vrednost()
+
+        
+        return dataframes
+    
+    
+    def DFmikrobioloske(self):
+        if self.MikrobiloskeZahteve:
+            columns = []
+            values = []
+            for entry in self.MikrobiloskeZahteve:
+                columns.append(entry)
+                values.append(self.MikrobiloskeZahteve[entry])            
+            return DataFrame([values],columns=columns)
+        else:
+            return DataFrame([np.NaN])
+        
+    
+    def DFfizikalno_kemijske(self):
+        if self.FizikalnoKemijskeZahteve:
+            columns = []
+            values = []
+            for entry in self.FizikalnoKemijskeZahteve:
+                columns.append(entry)
+                values.append(self.FizikalnoKemijskeZahteve[entry])            
+            return DataFrame([values],columns=columns)
+        else:
+            return DataFrame([np.NaN])
+    
+    def DFhranilna_vrednost(self):
+        if self.HranilnaVrednost:
+            hv = self.HranilnaVrednost
+
+            columns = []
+            values = []
+            for ele in hv:
+                if ele == "en_vrednost":
+                    columns.append("Energijska vrednost 1")
+                    columns.append("Energijska vrednost 2")
+                    values.append(hv["en_vrednost"][0])
+                    values.append(hv["en_vrednost"][1])
+                elif ele == "mascobe":
+                    columns.append("Maščobe")
+                    columns.append("Nasičene")
+                    values.append(hv["mascobe"][0])
+                    values.append(hv["mascobe"][1])
+                elif ele == "oglikovi hidrati":
+                    columns.append("Ogljikovi hidrati")
+                    columns.append("Sladkorji")
+                    values.append(hv["oglikovi hidrati"][0])
+                    values.append(hv["oglikovi hidrati"][1])
+                elif ele == "vlaknine":
+                    columns.append("Prehranske vlaknine")
+                    values.append(hv["vlaknine"][0])
+                elif ele == "beljakonvine":
+                    columns.append("Beljakovine")
+                    values.append(hv["beljakonvine"][0])
+                elif ele == "sol":
+                    columns.append("Sol")
+                    values.append(hv["sol"][0])
+            return DataFrame([values],columns=columns)
+        else:
+            return DataFrame([np.NaN])
+            
 #        def defineDataShape():
             
 #        section = self.Sections("hranilna_vrednost")

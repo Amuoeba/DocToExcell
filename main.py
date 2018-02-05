@@ -33,8 +33,12 @@ tt.testSingleSections(documents,"aktivne_učinkovine")
 tt.testAll(documents)
 
 
-writer = createExcel.writeExcell(None)
-for ele in documents:
-    writer.createDocDataframe(ele)
-print (writer.dataframe)
-writer.write("test.xlsx")
+#writer = createExcel.writeExcell(None)
+#for ele in documents:
+#    writer.createDocDataframe(ele)
+#print (writer.dataframe)
+#writer.write("test.xlsx")
+
+wt = createExcel.ExcellWriter(documents)
+print(wt.DF)
+wt.write("test1.xlsx")

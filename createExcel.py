@@ -7,7 +7,7 @@ import numpy as np
 class writeExcell():
     def __init__(self,dataframe):
         self.dataframe = dataframe
-        self.index = pd.Index(["Naziv","Skupina","Opis","Sestavine","Izgled","Okus In Vonj","Zakonodaja"])
+        self.index = pd.Index(["Šifra","Naziv","Skupina","Opis","Sestavine","Izgled","Okus In Vonj","Zakonodaja"])
         
         
     
@@ -22,6 +22,7 @@ class writeExcell():
         docDF["Izgled"] = [self.NA(document.Izgled)]
         docDF["Okus In Vonj"] = [self.NA(document.Vonj)]
         docDF = self.setMIKROBIOLOSKE(docDF,document)
+        docDF = self.setFIZIKALNO_KEMIJSKE_ZAHTEVE(docDF,document)
         docDF["Zakonodaja"] = [self.NA(document.Zakonodaja)]
         
         
@@ -40,6 +41,17 @@ class writeExcell():
                 if entry not in self.index:
                     self.index = self.index.append(pd.Index([entry]))
                 documentDF[entry] = [document.MikrobiloskeZahteve[entry]]        
+            return documentDF
+        else:
+            return documentDF
+    
+    def setFIZIKALNO_KEMIJSKE_ZAHTEVE(self,documentDF,document):
+        assert isinstance(document,parseXML.Document)
+        if document.FizikalnoKemijskeZahteve:
+            for entry in document.FizikalnoKemijskeZahteve:
+                if entry not in self.index:
+                    self.index = self.index.append(pd.Index([entry]))
+                documentDF[entry] = [document.FizikalnoKemijskeZahteve[entry]]
             return documentDF
         else:
             return documentDF

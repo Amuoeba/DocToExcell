@@ -36,7 +36,7 @@ class ExcellWriter():
     def buildIndex(self):
         sectionOrder = ["Šifra","Naziv","Skupina","Opis","Sestavine","Izgled",
                  "Okus In Vonj","Zakonodaja","Mikrobiološke Zahteve",
-                 "Fizikalno Kemijske Zahteve","Hranilna Vrednost","Pakiranje"]
+                 "Fizikalno Kemijske Zahteve","Hranilna Vrednost","Aktivne učinkovine","Pakiranje"]
         indList = []
         for s in sectionOrder:
             indList = indList + list(self.conSec[s].columns.values)

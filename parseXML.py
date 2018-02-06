@@ -329,6 +329,7 @@ class Document():
         dataframes["Mikrobiološke Zahteve"] = self.DFmikrobioloske()
         dataframes["Fizikalno Kemijske Zahteve"] = self.DFfizikalno_kemijske()
         dataframes["Hranilna Vrednost"] = self.DFhranilna_vrednost()
+        dataframes["Aktivne učinkovine"] = self.DFaktivne_ucinkovine()
         dataframes["Pakiranje"] = self.DFpakiranje()
 
         
@@ -365,6 +366,16 @@ class Document():
             for entry in self.Pakiranje:
                 columns.append(entry)
                 values.append(self.Pakiranje[entry])
+            return DataFrame([values],columns=columns)
+        else:
+            return DataFrame([np.NaN])
+    def DFaktivne_ucinkovine(self):
+        if self.AktivneUcinkovine:
+            columns = []
+            values = []
+            for entry in self.AktivneUcinkovine:
+                columns.append(entry)
+                values.append(self.AktivneUcinkovine[entry][0])
             return DataFrame([values],columns=columns)
         else:
             return DataFrame([np.NaN])

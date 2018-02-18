@@ -13,23 +13,23 @@ for file in os.listdir("./DocData/"):
         doc = parser.Document(path,"table")
         documents.append(doc)
 
-for i in documents:    
-    assert isinstance(i,parser.Document)
-    print("###############")
-    print(i.doc_name)
+#for i in documents:    
+#    assert isinstance(i,parser.Document)
+#    print("###############")
+#    print(i.doc_name)
+#    
+#    for j in i.textByRow1:
+#        print(j)
     
-    for j in i.textByRow1:
-        print(j)
-    
-tt.testAttrPressence(documents,'SENZORIČNE ')
-tt.testAttrFound(documents)
-tt.testSections(documents)
-tt.testHranilnaVrednost(documents)
-tt.testMikrobiloskeZahteve(documents)
-tt.testFizikalnoKemijskeZahteve(documents)
-tt.testPakiranje(documents)
-tt.testZakonodaja(documents)
-tt.testSingleSections(documents,"aktivne_učinkovine")
+#tt.testAttrPressence(documents,'SENZORIČNE ')
+#tt.testAttrFound(documents)
+#tt.testSections(documents)
+#tt.testHranilnaVrednost(documents)
+#tt.testMikrobiloskeZahteve(documents)
+#tt.testFizikalnoKemijskeZahteve(documents)
+#tt.testPakiranje(documents)
+#tt.testZakonodaja(documents)
+#tt.testSingleSections(documents,"aktivne_učinkovine")
 tt.testAll(documents)
 
 

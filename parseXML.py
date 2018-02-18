@@ -240,13 +240,14 @@ class Document():
                 val = entry[0]
 #                zahteve.append({val:entry[1]})
                 zahteve[val] = entry[1]
+#                print("val: ",val," entry: ",entry)
             
         self.FizikalnoKemijskeZahteve = zahteve
         return zahteve
         
     def ProcessSection_PAKIRANJE(self):
         markers = {"neto":re.compile("neto koli[a-ž]*?",re.IGNORECASE),
-                   "embalaža":re.compile("embalaža",re.IGNORECASE),
+#                   "embalaža":re.compile("embalaža",re.IGNORECASE),
                    "tip MPE":re.compile("tip mpe",re.IGNORECASE),
                    "tip TP":re.compile("tip tp",re.IGNORECASE),
                    "tip KP":re.compile("tip kp",re.IGNORECASE),
@@ -255,7 +256,8 @@ class Document():
                    "dimenzija KP":re.compile("dime[a-ž]*? kp",re.IGNORECASE),
                    "število MPE":re.compile("število mpe na",re.IGNORECASE),
                    "število plasti na paleti":re.compile("število plasti na pale",re.IGNORECASE),
-                   "način skladiščenja in transporta":re.compile("način skladiščenja in tran",re.IGNORECASE),
+                   "način transporta":re.compile("način transporta",re.IGNORECASE),
+                   "način skladiščenja":re.compile("način skladiščenja",re.IGNORECASE),
                    "rok uporabe":re.compile("rok upo",re.IGNORECASE)}
         
         if "pakiranje" in self.Sections:
@@ -311,8 +313,8 @@ class Document():
                 val = re.findall(valRegex,v)
                 val = list(map(getMatchedGroup,val))
                 values = values + val
-            aktivne_uc[ucinkovina] = values
         
+            aktivne_uc[ucinkovina + "(akt)"] = values
         self.AktivneUcinkovine = aktivne_uc
         return aktivne_uc
     
@@ -375,7 +377,9 @@ class Document():
             values = []
             for entry in self.AktivneUcinkovine:
                 columns.append(entry)
-                values.append(self.AktivneUcinkovine[entry][0])
+                columns.append(entry + "Enote")
+                values.append(self.AktivneUcinkovine[entry][0][0])
+                values.append(self.AktivneUcinkovine[entry][0][1])
             return DataFrame([values],columns=columns)
         else:
             return DataFrame([np.NaN])
@@ -390,28 +394,46 @@ class Document():
             for ele in hv:
                 if ele == "en_vrednost":
                     columns.append("Energijska vrednost 1")
+                    columns.append("ENV1 Enote")
                     columns.append("Energijska vrednost 2")
-                    values.append(hv["en_vrednost"][0])
-                    values.append(hv["en_vrednost"][1])
+                    columns.append("ENV2 Enote")
+                    values.append(hv["en_vrednost"][0][0])
+                    values.append(hv["en_vrednost"][0][1])
+                    values.append(hv["en_vrednost"][1][0])
+                    values.append(hv["en_vrednost"][1][1])
                 elif ele == "mascobe":
                     columns.append("Maščobe")
+                    columns.append("M Enote")
                     columns.append("Nasičene")
-                    values.append(hv["mascobe"][0])
-                    values.append(hv["mascobe"][1])
+                    columns.append("MN Enote")
+                    values.append(hv["mascobe"][0][0])
+                    values.append(hv["mascobe"][0][1])
+                    values.append(hv["mascobe"][1][0])
+                    values.append(hv["mascobe"][1][1])
                 elif ele == "oglikovi hidrati":
                     columns.append("Ogljikovi hidrati")
+                    columns.append("OH Enote")                    
                     columns.append("Sladkorji")
-                    values.append(hv["oglikovi hidrati"][0])
-                    values.append(hv["oglikovi hidrati"][1])
+                    columns.append("S Enote")
+                    values.append(hv["oglikovi hidrati"][0][0])
+                    values.append(hv["oglikovi hidrati"][0][1])
+                    values.append(hv["oglikovi hidrati"][1][0])
+                    values.append(hv["oglikovi hidrati"][1][1])
                 elif ele == "vlaknine":
                     columns.append("Prehranske vlaknine")
-                    values.append(hv["vlaknine"][0])
+                    columns.append("PV Enote")
+                    values.append(hv["vlaknine"][0][0])
+                    values.append(hv["vlaknine"][0][1])
                 elif ele == "beljakonvine":
                     columns.append("Beljakovine")
-                    values.append(hv["beljakonvine"][0])
+                    columns.append("B Enote")
+                    values.append(hv["beljakonvine"][0][0])
+                    values.append(hv["beljakonvine"][0][1])
                 elif ele == "sol":
                     columns.append("Sol")
-                    values.append(hv["sol"][0])
+                    columns.append("Sol Enote")
+                    values.append(hv["sol"][0][0])
+                    values.append(hv["sol"][0][1])
             return DataFrame([values],columns=columns)
         else:
             return DataFrame([np.NaN])

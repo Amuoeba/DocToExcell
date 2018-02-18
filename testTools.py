@@ -171,6 +171,7 @@ def testAll(doclist):
         videz = document.Izgled
         aktivneU = document.AktivneUcinkovine
         print("###### DOCNAME: ",document.doc_name)
+        print("Datum izdaje")
         print("Naziv: ",colored(naziv,chooseColor(naziv)))
         print("Sifra: ",colored(sifra,chooseColor(sifra)))
         print("Opis Izdelka: ",colored(opis,chooseColor(opis)))

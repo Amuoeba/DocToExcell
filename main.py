@@ -3,6 +3,7 @@ import parseXML as parser
 import os
 import testTools as tt
 import createExcel
+import tools
 
 documents = []
 excels = []
@@ -31,6 +32,8 @@ for file in os.listdir("./DocData/"):
 #tt.testZakonodaja(documents)
 #tt.testSingleSections(documents,"aktivne_učinkovine")
 tt.testAll(documents)
+#documents = tools.FilterWrongType(documents)
+#documents = tools.FindMostRecent(documents)
 
 
 #writer = createExcel.writeExcell(None)
@@ -42,3 +45,4 @@ tt.testAll(documents)
 wt = createExcel.ExcellWriter(documents)
 #print(wt.DF)
 wt.write("test1.xlsx")
+

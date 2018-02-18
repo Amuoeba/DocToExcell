@@ -222,9 +222,13 @@ class Document():
         else:
             return None
         pathogens = {}
+        split = re.compile("((?:< *[0-9]*|neg.)(?:\.*|,*)[0-9]*)((?: *)(?:\/|cfu\/|CFU\/)(?: *)(?:[A-z]|(?:[0-9]*,*[0-9]* *[A-z]*)))",re.IGNORECASE)
         for entry in mik_zaht:
             bact = entry[0]
-            pathogens[bact] = entry[1]
+            match = re.match(split,entry[1])
+            val = match.group(1)
+            enota = match.group(2)
+            pathogens[bact] = [val,enota]
             
         self.MikrobiloskeZahteve = pathogens
         return pathogens
@@ -344,7 +348,9 @@ class Document():
             values = []
             for entry in self.MikrobiloskeZahteve:
                 columns.append(entry)
-                values.append(self.MikrobiloskeZahteve[entry])            
+                columns.append(entry+" enote")
+                values.append(self.MikrobiloskeZahteve[entry][0])
+                values.append(self.MikrobiloskeZahteve[entry][1])
             return DataFrame([values],columns=columns)
         else:
             return DataFrame([np.NaN])

@@ -1,4 +1,5 @@
 import parseXML
+from prepareUnstrructured import DocumentUnstructured
 from termcolor import colored
 
 
@@ -189,5 +190,7 @@ def testAll(doclist):
         
         
         
-        
+def test2(doc):
+    assert isinstance(doc,DocumentUnstructured)
+    print(doc.rows)
         

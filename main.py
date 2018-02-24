@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 import parseXML as parser
+from parseXML import Document
+from prepareUnstrructured import DocumentUnstructured
 import os
 import testTools as tt
 import createExcel
@@ -11,7 +13,9 @@ excels = []
 for file in os.listdir("./DocData/"):
     if file.endswith(".html"):        
         path = os.path.join("./DocData", file)
-        doc = parser.Document(path,"table")
+        doc = parser.Document(path)
+        if doc.CountNONE() > 6:
+            doc = DocumentUnstructured(path)
         documents.append(doc)
 
 #for i in documents:    
@@ -32,7 +36,7 @@ for file in os.listdir("./DocData/"):
 #tt.testZakonodaja(documents)
 #tt.testSingleSections(documents,"aktivne_učinkovine")
 tt.testAll(documents)
-documents = tools.FilterWrongType(documents)
+#documents = tools.FilterWrongType(documents)
 documents = tools.FindMostRecent(documents)
 
 
@@ -45,4 +49,5 @@ documents = tools.FindMostRecent(documents)
 wt = createExcel.ExcellWriter(documents)
 #print(wt.DF)
 wt.write("test1.xlsx")
+tt.test2(documents[3])
 

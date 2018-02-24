@@ -10,7 +10,10 @@ import numpy as np
 
 
 class Document():
-    def __init__(self,doc_path,tip):
+    
+    DocType = "1: Normal Tabled"
+    
+    def __init__(self,doc_path):
         """
         Provide a XML document that you want to parse, and a type ofdocument (table or text)
         example use:\n doc = Document("./DocData/SP 40408 Bio keksi pomaranča 150 g.xml","table")
@@ -34,8 +37,8 @@ class Document():
         self.doc_soup = BeautifulSoup(self.document,'html.parser')
         self.rows = None        
         self.textEntries = self.findAllTextEntries(self.doc_soup)
-        self.textByRow = self.findRowText()
-        self.textByRow1 = self.findRows1()      
+        
+        self.textByRow = self.findRows()      
         self._HranilnaVrednostTemplate_ = None
         self.Naziv = None
         self.Sifra = None
@@ -86,16 +89,16 @@ class Document():
         txtEntries = [x.lstrip() for x in txtEntries]
         return txtEntries
     
-    def findRowText(self):
-        """Extracts rows columns and values"""
-        rows = self.doc_soup.find_all("tr")
-        text_by_row = []
-        for row in rows:
-            tx = self.findAllTextEntries(row)
-            text_by_row.append(tx)
-        return text_by_row
+#    def findRowText(self):
+#        """Extracts rows columns and values"""
+#        rows = self.doc_soup.find_all("tr")
+#        text_by_row = []
+#        for row in rows:
+#            tx = self.findAllTextEntries(row)
+#            text_by_row.append(tx)
+#        return text_by_row
     
-    def findRows1(self):
+    def findRows(self):
         txtEntries = self.doc_soup.find_all("font")#attrs={"lang":"sl-SI"})
         rows = []
         for ele in txtEntries:
@@ -110,27 +113,27 @@ class Document():
             aux_tx = str(tx)
             if aux_tx not in aux:
                 text_by_row.append(tx)
-                aux.add(aux_tx)
-            
+                aux.add(aux_tx)            
         return text_by_row
 
     def FindNazivSifra(self):
-        text = " ".join(self.textByRow1[0])
-        Rnaziv = re.compile("(?<=PROIZVODA )(.*)(?= Šifra)")
-        Ršifra = re.compile("(?<=Šifra: )(.*)(?= Izdaja)")
+        if len(self.textByRow) > 0:
+            text = " ".join(self.textByRow[0])
+            Rnaziv = re.compile("(?<=PROIZVODA )(.*)(?= Šifra)")
+            Ršifra = re.compile("(?<=Šifra: )(.*)(?= Izdaja)")
         
-        naziv = re.search(Rnaziv,text)    
-        sifra = re.search(Ršifra,text)
+            naziv = re.search(Rnaziv,text)    
+            sifra = re.search(Ršifra,text)
         
-        if naziv:
-            naziv = naziv.group(0)
-            self.Naziv = naziv
-        if sifra:
-            sifra = sifra.group(0)
-            self.Sifra = sifra
+            if naziv:
+                naziv = naziv.group(0)
+                self.Naziv = naziv
+            if sifra:
+                sifra = sifra.group(0)
+                self.Sifra = sifra
             
     def FindDatumIzdaje(self):
-        for row in self.textByRow1:
+        for row in self.textByRow:
             for item in row:
                 if bool(self.Markers["Datum izdaje"].match(item)):
                     return item
@@ -138,7 +141,7 @@ class Document():
     
     def FindSimple(self,pattern):
         matches = []
-        for row in self.textByRow1:            
+        for row in self.textByRow:            
             for item in enumerate(row):
                 if bool(pattern.match(item[1])):
                     match = row[item[0]+1:]
@@ -155,7 +158,7 @@ class Document():
         local_identifier = None
         section = []
         global_sections = {}
-        for row in self.textByRow1:
+        for row in self.textByRow:
             first = row[0]
             for m in self.Markers:
                 marker = self.Markers[m]

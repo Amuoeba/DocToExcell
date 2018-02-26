@@ -49,5 +49,9 @@ documents = tools.FindMostRecent(documents)
 wt = createExcel.ExcellWriter(documents)
 #print(wt.DF)
 wt.write("test1.xlsx")
-tt.test2(documents[3])
+t = None
+for i in documents:
+    if i.DocType == "2: Only textual":
+        t = i
+tt.test2(t)
 

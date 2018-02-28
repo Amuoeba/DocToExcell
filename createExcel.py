@@ -19,11 +19,13 @@ class ExcellWriter():
         for document in self.documents:
             if document.DocType == "1: Normal Tabled":
                 assert isinstance(document,parseXML.Document)
-                for section in document.Dataframes:
+                #Change this to prepare different output
+                for section in document.HEADER_Dataframes:
+                    df = document.HEADER_Dataframes
                     if section not in DFs:                 
-                        DFs[section] = [document.Dataframes[section]]
+                        DFs[section] = [df[section]]
                     else:
-                        DFs[section].append(document.Dataframes[section])
+                        DFs[section].append(df[section])
                         
             elif document.DocType == "2: Only textual":
                 assert isinstance(document, pU.DocumentUnstructured)
@@ -58,7 +60,6 @@ class ExcellWriter():
     def write(self,path,path2):
         writer = pd.ExcelWriter(path,engine="openpyxl")
         writerUnstructured = pd.ExcelWriter(path2,engine="openpyxl")
-        print(self.UnstructDF)
         Ud = pd.DataFrame(self.UnstructDF)
         self.DF.to_excel(writer, index=False)
         Ud.to_excel(writerUnstructured,index=False)        

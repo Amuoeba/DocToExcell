@@ -62,6 +62,7 @@ class Document():
         self.ProcessSection_ZAKONODAJA()
         self.ProcessSection_AKTIVNE_UCINKOVINE()
         self.Dataframes = self.PrepareDataFrames()
+        self.HEADER_Dataframes = self.HEADER_PrepareDataFrames()
     
     def listAttributes(self):
         attrList = ["Naziv","Sifra","Izgled","Vonj","Zakonodaja","Sestavine","OpisIzdelka"]
@@ -176,7 +177,8 @@ class Document():
         return global_sections
  
     
-
+    #Processing sections and extracting values
+    
     def ProcessSection_HRANILNA_VREDNOST(self):
         markers = {"en_vrednost":re.compile("energijska vrednost",re.IGNORECASE),
                    "mascobe":re.compile("maščobe",re.IGNORECASE),
@@ -226,8 +228,8 @@ class Document():
         for entry in mik_zaht:
             bact = entry[0]
             match = re.match(split,entry[1])
-            val = match.group(1)
-            enota = match.group(2)
+            val = self.StandardizeFormat(match.group(1))
+            enota = self.StandardizeFormat(match.group(2))
             pathogens[bact] = [val,enota]
             
         self.MikrobiloskeZahteve = pathogens
@@ -322,6 +324,9 @@ class Document():
         self.AktivneUcinkovine = aktivne_uc
         return aktivne_uc
     
+    
+    
+    # Preparation of data frames for individual sections
     def PrepareDataFrames(self):
         dataframes = {}
         dataframes["Šifra"] = DataFrame({"Šifra":[self.Sifra]})
@@ -339,7 +344,7 @@ class Document():
         dataframes["Pakiranje"] = self.DFpakiranje()        
         return dataframes
     
-    
+
     def DFmikrobioloske(self):
         if self.MikrobiloskeZahteve:
             columns = []
@@ -349,6 +354,7 @@ class Document():
                 columns.append(entry+" enote")
                 values.append(self.MikrobiloskeZahteve[entry][0])
                 values.append(self.MikrobiloskeZahteve[entry][1])
+#                print(self.MikrobiloskeZahteve[entry][1]," ",self.MikrobiloskeZahteve[entry][0])
             return DataFrame([values],columns=columns)
         else:
             return DataFrame([np.NaN])
@@ -442,6 +448,55 @@ class Document():
         else:
             return DataFrame([np.NaN])
     
+    
+    # Preparing PRE data frame format for new output format with units in a header
+    def HEADER_PrepareDataFrames(self):
+        dataframes = {}
+        dataframes["Šifra"] = DataFrame({"Šifra":[self.Sifra]})
+        dataframes["Naziv"] = DataFrame({"Naziv":[self.Naziv]})
+        dataframes["Skupina"] = DataFrame({"Skupina":["/"]})
+        dataframes["Opis"] = DataFrame({"Opis":[self.OpisIzdelka]})
+        dataframes["Sestavine"] = DataFrame({"Sestavine":[self.Sestavine]})
+        dataframes["Izgled"] = DataFrame({"Izgled":[self.Izgled]})
+        dataframes["Okus In Vonj"] = DataFrame({"Okus in Vonj":[self.Vonj]})
+        dataframes["Zakonodaja"] = DataFrame({"Zakonodaja":[self.Zakonodaja]})
+        dataframes["Mikrobiološke Zahteve"] = self.HEADER_DFMikrobioloske()
+        dataframes["Fizikalno Kemijske Zahteve"] = self.DFfizikalno_kemijske()
+        dataframes["Hranilna Vrednost"] = self.DFhranilna_vrednost()
+        dataframes["Aktivne učinkovine"] = self.HEADER_DFaktivne_ucinkovine()
+        dataframes["Pakiranje"] = self.DFpakiranje()        
+        return dataframes
+
+    def HEADER_DFMikrobioloske(self):
+        if self.MikrobiloskeZahteve:
+            columns = []
+            values = []
+            for entry in self.MikrobiloskeZahteve:
+                unit = self.MikrobiloskeZahteve[entry][1]
+                value = self.MikrobiloskeZahteve[entry][0]
+                columns.append(entry + " " + unit)
+                values.append(value)
+            return DataFrame([values],columns=columns)
+        else:
+            return DataFrame([np.NaN])
+    
+    def HEADER_DFaktivne_ucinkovine(self):
+        if self.AktivneUcinkovine:
+            columns = []
+            values = []
+            for entry in self.AktivneUcinkovine:
+                unit = self.StandardizeFormat(self.AktivneUcinkovine[entry][0][1])
+                value =  self.StandardizeFormat(self.AktivneUcinkovine[entry][0][0])
+                columns.append(entry + " " + unit)
+                values.append(value)
+#                values.append(self.AktivneUcinkovine[entry][0][1])
+                print(value,"",unit)
+            return DataFrame([values],columns=columns)
+        else:
+            return DataFrame([np.NaN])
+        
+    
+    # Utility functions from here on    
     def CountNONE(self):
         values= [self.Naziv,self.Sifra,self.HranilnaVrednost,self.MikrobiloskeZahteve,
                  self.FizikalnoKemijskeZahteve,self.Pakiranje,self.Zakonodaja,self.Sestavine,
@@ -450,8 +505,18 @@ class Document():
         for i in values:
             if not(i):
                 count += 1
-        return count  
+        return count
     
+    def StandardizeFormat(self,val):
+        if val == "neg.":
+            return "0"
+        else:
+            val = val.lower()
+            val = val.replace(" ","")
+            val = val.replace("cfu","").lstrip().rstrip()
+            return val
+
+# External utility functions  
 def botomUp(textele):
     if textele:
         if textele.name == "tr":
@@ -469,9 +534,7 @@ def getMatchedGroup(tup):
     return matched
     
 
-class RegExTable():
-    def __init__(self):
-        self.SecifikacijaProizvoda = re.compile("")
+
         
 
 
@@ -480,10 +543,7 @@ class RegExTable():
 
 
 
-class Section():
-    def __init__(self,name,data):
-        self.name = name
-        self.data = data
+
 
 
 

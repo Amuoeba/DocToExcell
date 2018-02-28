@@ -336,9 +336,7 @@ class Document():
         dataframes["Fizikalno Kemijske Zahteve"] = self.DFfizikalno_kemijske()
         dataframes["Hranilna Vrednost"] = self.DFhranilna_vrednost()
         dataframes["Aktivne učinkovine"] = self.DFaktivne_ucinkovine()
-        dataframes["Pakiranje"] = self.DFpakiranje()
-
-        
+        dataframes["Pakiranje"] = self.DFpakiranje()        
         return dataframes
     
     

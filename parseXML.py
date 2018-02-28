@@ -462,7 +462,7 @@ class Document():
         dataframes["Zakonodaja"] = DataFrame({"Zakonodaja":[self.Zakonodaja]})
         dataframes["Mikrobiološke Zahteve"] = self.HEADER_DFMikrobioloske()
         dataframes["Fizikalno Kemijske Zahteve"] = self.DFfizikalno_kemijske()
-        dataframes["Hranilna Vrednost"] = self.DFhranilna_vrednost()
+        dataframes["Hranilna Vrednost"] = self.HEADER_DFhranilna_vrednost()
         dataframes["Aktivne učinkovine"] = self.HEADER_DFaktivne_ucinkovine()
         dataframes["Pakiranje"] = self.DFpakiranje()        
         return dataframes
@@ -474,7 +474,7 @@ class Document():
             for entry in self.MikrobiloskeZahteve:
                 unit = self.MikrobiloskeZahteve[entry][1]
                 value = self.MikrobiloskeZahteve[entry][0]
-                columns.append(entry + " " + unit)
+                columns.append(entry + " " + "(" + unit +")")
                 values.append(value)
             return DataFrame([values],columns=columns)
         else:
@@ -487,10 +487,63 @@ class Document():
             for entry in self.AktivneUcinkovine:
                 unit = self.StandardizeFormat(self.AktivneUcinkovine[entry][0][1])
                 value =  self.StandardizeFormat(self.AktivneUcinkovine[entry][0][0])
-                columns.append(entry + " " + unit)
+                columns.append(entry + " " + "(" + unit +")")
                 values.append(value)
-#                values.append(self.AktivneUcinkovine[entry][0][1])
-                print(value,"",unit)
+
+                
+            return DataFrame([values],columns=columns)
+        else:
+            return DataFrame([np.NaN])
+    
+    def HEADER_DFhranilna_vrednost(self):
+        if self.HranilnaVrednost:
+            hv = self.HranilnaVrednost
+            columns = []
+            values = []
+            for ele in hv:
+                if ele == "en_vrednost":
+                    valueKJ = hv["en_vrednost"][0][0] 
+                    unitKJ = hv["en_vrednost"][0][1]
+                    valueKACAl = hv["en_vrednost"][1][0]
+                    unitKACAL = hv["en_vrednost"][1][1]
+                    columns.append("Energijska vrednost" +" "+ "(" + unitKJ +")")
+                    columns.append("Energijska vrednost" +" "+ "(" + unitKACAL +")")
+                    values.append(valueKJ)
+                    values.append(valueKACAl)
+                elif ele == "mascobe":
+                    valueNorm = hv["mascobe"][0][0] 
+                    unitNorm = hv["mascobe"][0][1]
+                    valueNas = hv["mascobe"][1][0]
+                    unitNas = hv["mascobe"][1][1]
+                    columns.append("Maščobe" + " " + "(" + unitNorm +")")
+                    columns.append("Nasičene M." + " " + "(" + unitNas +")")
+                    values.append(valueNorm)
+                    values.append(valueNas)
+
+                elif ele == "oglikovi hidrati":
+                    columns.append("Ogljikovi hidrati")
+                    columns.append("OH Enote")                    
+                    columns.append("Sladkorji")
+                    columns.append("S Enote")
+                    values.append(hv["oglikovi hidrati"][0][0])
+                    values.append(hv["oglikovi hidrati"][0][1])
+                    values.append(hv["oglikovi hidrati"][1][0])
+                    values.append(hv["oglikovi hidrati"][1][1])
+                elif ele == "vlaknine":
+                    columns.append("Prehranske vlaknine")
+                    columns.append("PV Enote")
+                    values.append(hv["vlaknine"][0][0])
+                    values.append(hv["vlaknine"][0][1])
+                elif ele == "beljakonvine":
+                    columns.append("Beljakovine")
+                    columns.append("B Enote")
+                    values.append(hv["beljakonvine"][0][0])
+                    values.append(hv["beljakonvine"][0][1])
+                elif ele == "sol":
+                    columns.append("Sol")
+                    columns.append("Sol Enote")
+                    values.append(hv["sol"][0][0])
+                    values.append(hv["sol"][0][1])
             return DataFrame([values],columns=columns)
         else:
             return DataFrame([np.NaN])

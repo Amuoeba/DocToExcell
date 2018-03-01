@@ -233,6 +233,7 @@ class Document():
             pathogens[bact] = [val,enota]
             
         self.MikrobiloskeZahteve = pathogens
+        
         return pathogens
     
     def ProcessSection_FIZIKALNO_KEMIJSKE_ZAHTEVE(self):
@@ -241,14 +242,43 @@ class Document():
         else:
             return None
         zahteve = {}
+        averageRE = re.compile("(^[0-9]+(?:,|\.)*[0-9]*)",re.IGNORECASE)
+        unitRE = re.compile("([^ 0-9]*\/[^ 0-9]*|%)",re.IGNORECASE)        
+        minmaxOklepaj = re.compile("( *[0-9]*(?:,|\.)*[0-9]*) *(?:–|-)( *[0-9]*(?:,|\.)*[0-9]*)",re.IGNORECASE)
+        minExplicit = re.compile("(?:min\. *)([0-9]*(?:,|\.)*[0-9]*)",re.IGNORECASE)
+        maxExplicit = re.compile("(?:max\. *)([0-9]*(?:,|\.)*[0-9]*)",re.IGNORECASE)
+        maxLogical = re.compile("(?:≤|<) *([0-9]*(?:,|\.)*[0-9]*)",re.IGNORECASE)
         for entry in fiz_kem_zaht:
             if entry and entry[0] != "/":
-                val = entry[0]
-#                zahteve.append({val:entry[1]})
-                zahteve[val] = entry[1]
-#                print("val: ",val," entry: ",entry)
-            
+                val = entry[1]
+                average = re.search(averageRE,val)
+                unit = re.findall(unitRE,val)[0]
+                minMAX = re.search(minmaxOklepaj,val)
+                minExp = re.search(minExplicit,val)
+                maxExp = re.search(maxExplicit,val)
+                maxL = re.search(maxLogical,val)
+                
+                valTemplate = {"min":None,"max":None,"average":None,"unit":None}                
+                if average:
+                    valTemplate["average"] = average.group(1)
+                if unit != []:
+                    valTemplate["unit"] = unit
+                if minMAX:
+                    valTemplate["min"] = minMAX.group(1)
+                    valTemplate["max"] = minMAX.group(2)              
+
+                if minExp:
+                    valTemplate["min"] = minExp.group(1)
+                if maxExp:
+                    valTemplate["max"] = maxExp.group(1)
+                if maxL:
+                    valTemplate["max"] = maxL.group(1)
+                    
+                measure = entry[0]
+                zahteve[measure] = valTemplate
+
         self.FizikalnoKemijskeZahteve = zahteve
+#        print(zahteve)
         return zahteve
         
     def ProcessSection_PAKIRANJE(self):
@@ -320,7 +350,7 @@ class Document():
                 val = list(map(getMatchedGroup,val))
                 values = values + val
         
-            aktivne_uc[ucinkovina + "(akt)"] = values
+            aktivne_uc["[akt] " + ucinkovina] = values
         self.AktivneUcinkovine = aktivne_uc
         return aktivne_uc
     
@@ -354,7 +384,6 @@ class Document():
                 columns.append(entry+" enote")
                 values.append(self.MikrobiloskeZahteve[entry][0])
                 values.append(self.MikrobiloskeZahteve[entry][1])
-#                print(self.MikrobiloskeZahteve[entry][1]," ",self.MikrobiloskeZahteve[entry][0])
             return DataFrame([values],columns=columns)
         else:
             return DataFrame([np.NaN])
@@ -461,11 +490,30 @@ class Document():
         dataframes["Okus In Vonj"] = DataFrame({"Okus in Vonj":[self.Vonj]})
         dataframes["Zakonodaja"] = DataFrame({"Zakonodaja":[self.Zakonodaja]})
         dataframes["Mikrobiološke Zahteve"] = self.HEADER_DFMikrobioloske()
-        dataframes["Fizikalno Kemijske Zahteve"] = self.DFfizikalno_kemijske()
+        dataframes["Fizikalno Kemijske Zahteve"] = self.HEADER_DFfizikalno_kemijske()
         dataframes["Hranilna Vrednost"] = self.HEADER_DFhranilna_vrednost()
         dataframes["Aktivne učinkovine"] = self.HEADER_DFaktivne_ucinkovine()
         dataframes["Pakiranje"] = self.DFpakiranje()        
         return dataframes
+
+    def HEADER_DFfizikalno_kemijske(self):
+        if self.FizikalnoKemijskeZahteve:
+            columns = []
+            values = []
+            for entry in self.FizikalnoKemijskeZahteve:
+                unit = self.FizikalnoKemijskeZahteve[entry]["unit"]
+                Min = self.FizikalnoKemijskeZahteve[entry]["min"]
+                Max = self.FizikalnoKemijskeZahteve[entry]["max"]
+                aver = self.FizikalnoKemijskeZahteve[entry]["average"]
+                columns.append("[average] "+ entry + " " + "(" + unit +")")
+                columns.append("[min] "+ entry + " " + "(" + unit +")")
+                columns.append("[max] "+ entry + " " + "(" + unit +")")
+                values.append(aver)
+                values.append(Min)
+                values.append(Max)
+            return DataFrame([values],columns=columns)
+        else:
+            return DataFrame([np.NaN])
 
     def HEADER_DFMikrobioloske(self):
         if self.MikrobiloskeZahteve:
@@ -521,29 +569,29 @@ class Document():
                     values.append(valueNas)
 
                 elif ele == "oglikovi hidrati":
-                    columns.append("Ogljikovi hidrati")
-                    columns.append("OH Enote")                    
-                    columns.append("Sladkorji")
-                    columns.append("S Enote")
-                    values.append(hv["oglikovi hidrati"][0][0])
-                    values.append(hv["oglikovi hidrati"][0][1])
-                    values.append(hv["oglikovi hidrati"][1][0])
-                    values.append(hv["oglikovi hidrati"][1][1])
+                    valueOh = hv["oglikovi hidrati"][0][0]
+                    unitOh = hv["oglikovi hidrati"][0][1]
+                    valueSladkor = hv["oglikovi hidrati"][1][0]
+                    unitSladkor = hv["oglikovi hidrati"][1][1]
+                    columns.append("Ogljikovi hidrati" + " " + "(" + unitOh +")")
+                    columns.append("Sladkorji"+ " " + "(" + unitSladkor +")")
+                    values.append(valueOh)
+                    values.append(valueSladkor)
                 elif ele == "vlaknine":
-                    columns.append("Prehranske vlaknine")
-                    columns.append("PV Enote")
-                    values.append(hv["vlaknine"][0][0])
-                    values.append(hv["vlaknine"][0][1])
+                    value = hv["vlaknine"][0][0]
+                    unit = hv["vlaknine"][0][1]
+                    columns.append("Prehranske vlaknine"+ " " + "(" + unit +")")
+                    values.append(value)
                 elif ele == "beljakonvine":
-                    columns.append("Beljakovine")
-                    columns.append("B Enote")
-                    values.append(hv["beljakonvine"][0][0])
-                    values.append(hv["beljakonvine"][0][1])
+                    value = hv["beljakonvine"][0][0]
+                    unit = hv["beljakonvine"][0][1]
+                    columns.append("Beljakovine" + " " + "(" + unit +")")
+                    values.append(value)
                 elif ele == "sol":
-                    columns.append("Sol")
-                    columns.append("Sol Enote")
-                    values.append(hv["sol"][0][0])
-                    values.append(hv["sol"][0][1])
+                    value = hv["sol"][0][0]
+                    unit = hv["sol"][0][1]
+                    columns.append("Sol" + " " + "(" + unit +")")
+                    values.append(value)
             return DataFrame([values],columns=columns)
         else:
             return DataFrame([np.NaN])

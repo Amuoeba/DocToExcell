@@ -35,7 +35,7 @@ for file in os.listdir("./DocData/"):
 #tt.testPakiranje(documents)
 #tt.testZakonodaja(documents)
 #tt.testSingleSections(documents,"aktivne_učinkovine")
-#tt.testAll(documents)
+ #tt.testAll(documents)
 #documents = tools.FilterWrongType(documents)
 documents = tools.FindMostRecent(documents)
 

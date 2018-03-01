@@ -53,16 +53,23 @@ class ExcellWriter():
                  "Fizikalno Kemijske Zahteve","Hranilna Vrednost","Aktivne učinkovine","Pakiranje"]
         indList = []
         for s in sectionOrder:
-            indList = indList + list(self.conSec[s].columns.values)
-        
+            indList = indList + list(self.conSec[s].columns.values)        
         return pd.Index(indList)
     
     def write(self,path,path2):
-        writer = pd.ExcelWriter(path,engine="openpyxl")
+        writer = pd.ExcelWriter(path,engine="xlsxwriter")
         writerUnstructured = pd.ExcelWriter(path2,engine="openpyxl")
         Ud = pd.DataFrame(self.UnstructDF)
-        self.DF.to_excel(writer, index=False)
-        Ud.to_excel(writerUnstructured,index=False)        
+        self.DF.to_excel(writer, index=False,sheet_name='Sheet1')
+        Ud.to_excel(writerUnstructured,index=False)
+        
+        ########## Just formating##############################
+        workbook  = writer.book
+        worksheet = writer.sheets['Sheet1']        
+        wrap_format = workbook.add_format({'text_wrap': True})
+        worksheet.set_column("A:BL", None, wrap_format)
+        #######################################################
+        
         writer.save()
         writerUnstructured.save()
     

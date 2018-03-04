@@ -2,9 +2,11 @@
 from parseXML import Document
 import re
 from datetime import datetime
+from parseHTML import DocumentHTML
+
 
 def GetDate(doc):
-    assert isinstance(doc, Document)
+    assert isinstance(doc, DocumentHTML)
     dateRe = re.compile(".*?([0-9]*)\.([0-9]*)\.([0-9]*)",re.IGNORECASE)
     datumIzdaje = doc.DatumIzdaje
     m = re.match(dateRe,datumIzdaje)
@@ -18,7 +20,7 @@ def FindMostRecent(docList):
     docsBySifra = {}
     
     for doc in docList:
-        assert isinstance(doc,Document)
+        assert isinstance(doc,DocumentHTML)
         if doc.Sifra not in docsBySifra:
             docsBySifra[doc.Sifra] = [doc]
         else:
@@ -46,3 +48,14 @@ def FilterWrongType(doclist):
             docs.append(item)
     return docs
 
+def countAtributes(documents):
+    attrDict = {}
+    for document in documents:
+        assert isinstance(document,DocumentHTML)
+        for row in document.FormatedRows:
+            attribute = row[0]
+            if attribute not in attrDict:
+                attrDict[attribute] = 1
+            else:
+                attrDict[attribute] = attrDict[attribute] +1
+    return attrDict

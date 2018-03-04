@@ -28,7 +28,7 @@ class Document():
                         "mikrobioloske_zahteve":re.compile("mikrobiološke zahteve",re.IGNORECASE),
                         "fizikalno_kemijske_zahteve":re.compile("FIZIKALNO KEMIJSKE ZAHTEVE",re.IGNORECASE),
                         "hranilna_vrednost":re.compile("(.*)HRANILNA VREDNOST",re.IGNORECASE),
-                        "aktivne_učinkovine":re.compile("vsebnost|tabela",re.IGNORECASE),
+                        "aktivne_učinkovine":re.compile("tabela|vsebnost aktivnih komponent",re.IGNORECASE),
                         "senzoricne_zahteve":re.compile("senzorične zahteve",re.IGNORECASE),
                         "izdelal":re.compile("izdelal",re.IGNORECASE),
                         "pakiranje":re.compile("pakiranje",re.IGNORECASE)}
@@ -207,6 +207,7 @@ class Document():
                     values = values + vrednosti            
  
             values = list(map(getMatchedGroup,values))
+            print(values)
 #            data.append({hranilo:values})
             data[hranilo] = values
             
@@ -219,18 +220,35 @@ class Document():
     
     def ProcessSection_MIKROBIOLOSKE_ZAHTEVE(self):
         if "mikrobioloske_zahteve" in self.Sections:
-            mik_zaht = self.Sections["mikrobioloske_zahteve"]
-        
+            mik_zaht = self.Sections["mikrobioloske_zahteve"]        
         else:
             return None
         pathogens = {}
         split = re.compile("((?:< *[0-9]*|neg.)(?:\.*|,*)[0-9]*)((?: *)(?:\/|cfu\/|CFU\/)(?: *)(?:[A-z]|(?:[0-9]*,*[0-9]* *[A-z]*)))",re.IGNORECASE)
+        valRE = re.compile("^(neg.|<* *[0-9]+(?:,|\.)*[0-9]*)",re.IGNORECASE)
+        unitRE = re.compile("(?:[A-Za-z]{3})* *(?:\/)(?:[0-9]*(?:,|\.)*[0-9]* *[A-Za-z]*)",re.IGNORECASE)
+        
         for entry in mik_zaht:
+#            print(entry)
             bact = entry[0]
-            match = re.match(split,entry[1])
-            val = self.StandardizeFormat(match.group(1))
-            enota = self.StandardizeFormat(match.group(2))
-            pathogens[bact] = [val,enota]
+            val = re.search(valRE,entry[1])
+            un = re.search(unitRE,entry[1])
+#            print(val,un)
+#            value = re.match()
+#            print(mik_zaht)
+#            print(entry[1])
+            if val:
+                value = val.group(0)
+            else:
+                value = "#MV#"
+            if un:
+                unit = un.group(0)
+            else:
+                unit = "#MU#"
+#            match = re.match(split,entry[1])
+#            val = self.StandardizeFormat(match.group(1))
+#            enota = self.StandardizeFormat(match.group(2))
+            pathogens[bact] = [value,unit]
             
         self.MikrobiloskeZahteve = pathogens
         
@@ -252,7 +270,7 @@ class Document():
             if entry and entry[0] != "/":
                 val = entry[1]
                 average = re.search(averageRE,val)
-                unit = re.findall(unitRE,val)[0]
+                unit = re.search(unitRE,val)
                 minMAX = re.search(minmaxOklepaj,val)
                 minExp = re.search(minExplicit,val)
                 maxExp = re.search(maxExplicit,val)
@@ -261,11 +279,11 @@ class Document():
                 valTemplate = {"min":None,"max":None,"average":None,"unit":None}                
                 if average:
                     valTemplate["average"] = average.group(1)
-                if unit != []:
-                    valTemplate["unit"] = unit
+                if unit:
+                    valTemplate["unit"] = unit.group(0)
                 if minMAX:
                     valTemplate["min"] = minMAX.group(1)
-                    valTemplate["max"] = minMAX.group(2)              
+                    valTemplate["max"] = minMAX.group(2)
 
                 if minExp:
                     valTemplate["min"] = minExp.group(1)
@@ -415,6 +433,10 @@ class Document():
             columns = []
             values = []
             for entry in self.AktivneUcinkovine:
+#                print("#############################################3")
+#                print(self.AktivneUcinkovine[entry])
+#                print(self.Sections)
+#                print(self.textByRow)
                 columns.append(entry)
                 columns.append(entry + "Enote")
                 values.append(self.AktivneUcinkovine[entry][0][0])
@@ -441,6 +463,7 @@ class Document():
                     values.append(hv["en_vrednost"][1][0])
                     values.append(hv["en_vrednost"][1][1])
                 elif ele == "mascobe":
+#                    print(hv["mascobe"])
                     columns.append("Maščobe")
                     columns.append("M Enote")
                     columns.append("Nasičene")
@@ -505,9 +528,9 @@ class Document():
                 Min = self.FizikalnoKemijskeZahteve[entry]["min"]
                 Max = self.FizikalnoKemijskeZahteve[entry]["max"]
                 aver = self.FizikalnoKemijskeZahteve[entry]["average"]
-                columns.append("[average] "+ entry + " " + "(" + unit +")")
-                columns.append("[min] "+ entry + " " + "(" + unit +")")
-                columns.append("[max] "+ entry + " " + "(" + unit +")")
+                columns.append("[average] "+ entry + " " + "(" + self.NoneToStr(unit) +")")
+                columns.append("[min] "+ entry + " " + "(" + self.NoneToStr(unit) +")")
+                columns.append("[max] "+ entry + " " + "(" + self.NoneToStr(unit) +")")
                 values.append(aver)
                 values.append(Min)
                 values.append(Max)
@@ -522,7 +545,7 @@ class Document():
             for entry in self.MikrobiloskeZahteve:
                 unit = self.MikrobiloskeZahteve[entry][1]
                 value = self.MikrobiloskeZahteve[entry][0]
-                columns.append(entry + " " + "(" + unit +")")
+                columns.append(entry + " " + "(" + self.NoneToStr(unit) +")")
                 values.append(value)
             return DataFrame([values],columns=columns)
         else:
@@ -554,8 +577,8 @@ class Document():
                     unitKJ = hv["en_vrednost"][0][1]
                     valueKACAl = hv["en_vrednost"][1][0]
                     unitKACAL = hv["en_vrednost"][1][1]
-                    columns.append("Energijska vrednost" +" "+ "(" + unitKJ +")")
-                    columns.append("Energijska vrednost" +" "+ "(" + unitKACAL +")")
+                    columns.append("Energijska vrednost" +" "+ "(" + self.NoneToStr(unitKJ) +")")
+                    columns.append("Energijska vrednost" +" "+ "(" + self.NoneToStr(unitKACAL) +")")
                     values.append(valueKJ)
                     values.append(valueKACAl)
                 elif ele == "mascobe":
@@ -563,8 +586,8 @@ class Document():
                     unitNorm = hv["mascobe"][0][1]
                     valueNas = hv["mascobe"][1][0]
                     unitNas = hv["mascobe"][1][1]
-                    columns.append("Maščobe" + " " + "(" + unitNorm +")")
-                    columns.append("Nasičene M." + " " + "(" + unitNas +")")
+                    columns.append("Maščobe" + " " + "(" + self.NoneToStr(unitNorm) +")")
+                    columns.append("Nasičene M." + " " + "(" + self.NoneToStr(unitNas) +")")
                     values.append(valueNorm)
                     values.append(valueNas)
 
@@ -573,24 +596,24 @@ class Document():
                     unitOh = hv["oglikovi hidrati"][0][1]
                     valueSladkor = hv["oglikovi hidrati"][1][0]
                     unitSladkor = hv["oglikovi hidrati"][1][1]
-                    columns.append("Ogljikovi hidrati" + " " + "(" + unitOh +")")
-                    columns.append("Sladkorji"+ " " + "(" + unitSladkor +")")
+                    columns.append("Ogljikovi hidrati" + " " + "(" + self.NoneToStr(unitOh) +")")
+                    columns.append("Sladkorji"+ " " + "(" + self.NoneToStr(unitSladkor) +")")
                     values.append(valueOh)
                     values.append(valueSladkor)
                 elif ele == "vlaknine":
                     value = hv["vlaknine"][0][0]
                     unit = hv["vlaknine"][0][1]
-                    columns.append("Prehranske vlaknine"+ " " + "(" + unit +")")
+                    columns.append("Prehranske vlaknine"+ " " + "(" + self.NoneToStr(unit) +")")
                     values.append(value)
                 elif ele == "beljakonvine":
                     value = hv["beljakonvine"][0][0]
                     unit = hv["beljakonvine"][0][1]
-                    columns.append("Beljakovine" + " " + "(" + unit +")")
+                    columns.append("Beljakovine" + " " + "(" + self.NoneToStr(unit) +")")
                     values.append(value)
                 elif ele == "sol":
                     value = hv["sol"][0][0]
                     unit = hv["sol"][0][1]
-                    columns.append("Sol" + " " + "(" + unit +")")
+                    columns.append("Sol" + " " + "(" + self.NoneToStr(unit) +")")
                     values.append(value)
             return DataFrame([values],columns=columns)
         else:
@@ -615,6 +638,12 @@ class Document():
             val = val.lower()
             val = val.replace(" ","")
             val = val.replace("cfu","").lstrip().rstrip()
+            return val
+        
+    def NoneToStr(self,val):
+        if val == None:
+            return "Missing"
+        else:
             return val
 
 # External utility functions  

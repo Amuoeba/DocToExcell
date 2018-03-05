@@ -25,7 +25,7 @@ class DocumentHTML():
         
     # Getting structured information for each row
     def findRows(self):
-        AUXtxtEntries = self.doc_soup.find_all("p")#attrs={"lang":"sl-SI"})
+        AUXtxtEntries = self.doc_soup.find_all("p")
         txtEntries = []
         for ele in AUXtxtEntries:
             if ele.find_all("table",recusive=False) == []:
@@ -43,7 +43,8 @@ class DocumentHTML():
         for row in rows:
             tx = self.findAllTextEntries(row)
             aux_tx = str(tx)
-            if aux_tx not in aux:
+#            print(aux_tx)
+            if aux_tx not in aux or tx[0][0] == '':
                 text_by_row.append(tx)
                 aux.add(aux_tx)            
         return text_by_row
@@ -85,6 +86,8 @@ class DocumentHTML():
                 if ele[2] > 1:
                     for r in list(range(rowIndex,rowIndex+ele[2]))[1:]:
                         txtRows[r].insert(ele[1],ele[0])
+        txtRows = [x for x in txtRows if not all(i == '' for  i in x)]
+        
         return txtRows
     
     def botomUp(self,textele):

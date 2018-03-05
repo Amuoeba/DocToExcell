@@ -3,12 +3,14 @@ from parseXML import Document
 import re
 from datetime import datetime
 from parseHTML import DocumentHTML
+import FormattingTools.markers as markers
 
 
 def GetDate(doc):
     assert isinstance(doc, DocumentHTML)
     dateRe = re.compile(".*?([0-9]*)\.([0-9]*)\.([0-9]*)",re.IGNORECASE)
     datumIzdaje = doc.DatumIzdaje
+#    print(doc.doc_name)
     m = re.match(dateRe,datumIzdaje)
     
     date = datetime(int(m.group(3)),int(m.group(2)),int(m.group(1)))
@@ -48,14 +50,26 @@ def FilterWrongType(doclist):
             docs.append(item)
     return docs
 
-def countAtributes(documents):
+def countAtributes(documents,ignore = False):
     attrDict = {}
     for document in documents:
         assert isinstance(document,DocumentHTML)
         for row in document.FormatedRows:
             attribute = row[0]
-            if attribute not in attrDict:
-                attrDict[attribute] = 1
+            if ignore:
+                if not any(bool(re.search(x,attribute)) for x in markers.TO_IGNORE):
+                    if attribute not in attrDict:
+                        attrDict[attribute] = 1
+                    else:
+                        attrDict[attribute] = attrDict[attribute] +1
             else:
-                attrDict[attribute] = attrDict[attribute] +1
+                if attribute not in attrDict:
+                    attrDict[attribute] = 1
+                else:
+                    attrDict[attribute] = attrDict[attribute] +1
+                
     return attrDict
+
+def removeEnglish(documents):
+    """Remowes english documents based on whether the documnet date is defined"""
+    return [x for x in documents if x.DatumIzdaje]

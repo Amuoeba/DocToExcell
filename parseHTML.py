@@ -8,9 +8,8 @@ import pandas as pd
 import numpy as np
 
 
-class DocumentHTML():
+class DocumentHTML():  
     
-    DocType = "1: Normal Tabled"
     
     def __init__(self,doc_path):
         self.doc_name = doc_path

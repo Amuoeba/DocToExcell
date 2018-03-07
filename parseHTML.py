@@ -6,6 +6,7 @@ import re
 from pandas import DataFrame
 import pandas as pd
 import numpy as np
+from collections import OrderedDict
 
 
 class DocumentHTML():  
@@ -30,10 +31,13 @@ class DocumentHTML():
             if ele.find_all("table",recusive=False) == []:
                 txtEntries.append(ele)
         rows = []
+        checkRow = set([])
         for ele in txtEntries:
             row = self.botomUp(ele)
             if row:
-                rows.append(row)
+                if row not in checkRow:
+                    rows.append(row)
+                    checkRow.add(row)
         
         self.RAW_rows = rows
         text_by_row = []
@@ -85,9 +89,13 @@ class DocumentHTML():
                 if ele[2] > 1:
                     for r in list(range(rowIndex,rowIndex+ele[2]))[1:]:
                         txtRows[r].insert(ele[1],ele[0])
-        txtRows = [x for x in txtRows if not all(i == '' for  i in x)]
+        #self.removeBlanks(list(OrderedDict.fromkeys(x)))
+        txtRows = [self.removeBlanks(x) for x in txtRows if not all(i == '' for  i in x)]
         
         return txtRows
+    
+    def removeBlanks(self,row):
+        return [x for x in row if x != '']
     
     def botomUp(self,textele):
         if textele:

@@ -50,7 +50,7 @@ def FilterWrongType(doclist):
             docs.append(item)
     return docs
 
-def countAtributes(documents,ignore = False):
+def countAtributes(documents,ignore = False,join=False):
     attrDict = {}
     for document in documents:
         assert isinstance(document,DocumentHTML)
@@ -67,7 +67,28 @@ def countAtributes(documents,ignore = False):
                     attrDict[attribute] = 1
                 else:
                     attrDict[attribute] = attrDict[attribute] +1
-                
+    if join:
+        jointAttr = {}
+        joinMarkers = markers.JOIN_MARKERS
+        allreadyIn = set()
+        for attr in attrDict:
+            for marker in joinMarkers:
+                reg = joinMarkers[marker]
+                if bool(re.search(reg,attr)):
+                    if marker == "10 HDA":
+                        print("10 HDA")
+                    if marker in jointAttr:
+                        jointAttr[marker] = jointAttr[marker] + attrDict[attr]
+                        allreadyIn.add(attr)
+                    else:
+                        jointAttr[marker] = attrDict[attr]
+                        allreadyIn.add(attr)
+        for attr in attrDict:
+            if attr not in allreadyIn:
+                jointAttr[attr] = attrDict[attr]
+
+        attrDict = jointAttr
+    
     return attrDict
 
 def removeEnglish(documents):

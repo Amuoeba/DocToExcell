@@ -75,8 +75,6 @@ def countAtributes(documents,ignore = False,join=False):
             for marker in joinMarkers:
                 reg = joinMarkers[marker]
                 if bool(re.search(reg,attr)):
-                    if marker == "10 HDA":
-                        print("10 HDA")
                     if marker in jointAttr:
                         jointAttr[marker] = jointAttr[marker] + attrDict[attr]
                         allreadyIn.add(attr)

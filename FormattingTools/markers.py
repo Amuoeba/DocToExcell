@@ -15,4 +15,8 @@ JOIN_MARKERS = {"10 HDA":re.compile("10-* *HDA"),"Dimenzije KP":re.compile("Dime
                 "Maščobe":re.compile("maščobe",re.IGNORECASE),"Ogljikovi hidrati":re.compile("ogljikovi hidrati",re.IGNORECASE),
                 "Zakonodaja":re.compile("zakon",re.IGNORECASE),"Dimenzije MPE":re.compile("dimenzije mpe",re.IGNORECASE),
                 "Fizikalno kemijske zahteve":re.compile("fizikaln",re.IGNORECASE),"Mikrobiološke zahteve":re.compile("mikrobio|mirobio",re.IGNORECASE),
-                "Hranilna vrednost":re.compile("hranilna",re.IGNORECASE),"Kontrola":re.compile("izdelek je kontroliran",re.IGNORECASE)}
+                "Hranilna vrednost":re.compile("hranilna",re.IGNORECASE),"Kontrola":re.compile("izdelek je kontroliran",re.IGNORECASE),
+                "Tip KP":re.compile("Tip.*(?=komerci).*",re.IGNORECASE),"Tip MPE":re.compile("Tip.*(?=maloprod).*",re.IGNORECASE)}
+
+EXTRACTION_MARKERS = {"Opis izdelka":re.compile("opis izdelka",re.IGNORECASE),"Sestavine":re.compile("sestavine",re.IGNORECASE),
+                      "Senzorične zahteve":re.compile("senzorične zahteve",re.IGNORECASE)}

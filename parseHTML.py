@@ -7,6 +7,7 @@ from pandas import DataFrame
 import pandas as pd
 import numpy as np
 from collections import OrderedDict
+from FormattingTools import extractBasic
 
 
 class DocumentHTML():  
@@ -19,9 +20,13 @@ class DocumentHTML():
         self.RAW_rows = None
         self.rows = self.findRows()
         self.FormatedRows = self.formatRows()
+        
+        # Atributes
         self.DatumIzdaje = self.FindDatumIzdaje()
         self.Sifra = self.FindCode()
-        
+        self.Opis = extractBasic.opisIzdelka(self.FormatedRows)
+        self.Sestavine = extractBasic.sestavine(self.FormatedRows)
+        self.Senzorika = extractBasic.senzorika(self.FormatedRows)
         
     # Getting structured information for each row
     def findRows(self):

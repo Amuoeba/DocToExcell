@@ -8,14 +8,14 @@ def opisIzdelka(rows):
     m = markers.EXTRACTION_MARKERS["Opis izdelka"]
     for row in rows:
         if bool(re.search(m,row[0])):
-            return row[1]
+            return A("Opis  izdelka",row[1])
     return None
 
 def sestavine(rows):
     m = markers.EXTRACTION_MARKERS["Sestavine"]
     for row in rows:
         if bool(re.search(m,row[0])):
-            return row[1]
+            return A("Sestavine",row[1])
     return None
 
 def senzorika(rows):
@@ -27,4 +27,9 @@ def senzorika(rows):
                 attribute = row[1]
                 value = row[2]
                 senzorika.append(A(attribute,value))
+    
+    if senzorika == []:
+        return None
     return senzorika
+
+

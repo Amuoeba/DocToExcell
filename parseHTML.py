@@ -8,6 +8,7 @@ import pandas as pd
 import numpy as np
 from collections import OrderedDict
 from FormattingTools import extractBasic
+from FormattingTools.attribute import Attribute as A
 
 
 class DocumentHTML():  
@@ -30,28 +31,36 @@ class DocumentHTML():
         
     # Getting structured information for each row
     def findRows(self):
-        AUXtxtEntries = self.doc_soup.find_all("p")
-        txtEntries = []
-        for ele in AUXtxtEntries:
-            if ele.find_all("table",recusive=False) == []:
-                txtEntries.append(ele)
+#        AUXtxtEntries = self.doc_soup.find_all("p")
+#        txtEntries = []
+#        for ele in AUXtxtEntries:
+#            if ele.find_all("table",recusive=False) == []:
+#                txtEntries.append(ele)
+#        rows = []
+#        checkRow = set([])
+#        for ele in txtEntries:
+#            row = self.botomUp(ele)
+#            if row:
+#                if row not in checkRow:
+#                    rows.append(row)
+#                    checkRow.add(row)
+        
+        tables = self.doc_soup.find_all("table")
         rows = []
-        checkRow = set([])
-        for ele in txtEntries:
-            row = self.botomUp(ele)
-            if row:
-                if row not in checkRow:
+        for tab in tables:            
+            auxRows = tab.find_all("tr")
+            for row in  auxRows:
+                if row.find_all("table") == []:
                     rows.append(row)
-                    checkRow.add(row)
         
         self.RAW_rows = rows
-        text_by_row = []
-        aux = set()   
         
+        text_by_row = []
+        aux = set()        
         for row in rows:
             tx = self.findAllTextEntries(row)
             aux_tx = str(tx)
-#            print(aux_tx)
+##            print(aux_tx)
             if aux_tx not in aux or tx[0][0] == '':
                 text_by_row.append(tx)
                 aux.add(aux_tx)            
@@ -126,4 +135,42 @@ class DocumentHTML():
             return match.group(1)
         else:
             return "Ni šifre"
-    #Getting sections
+    # Getting sections
+    
+    # Printing functions
+    def printOpis(self):
+        assert isinstance(self.Opis,A)
+        print(self.Opis.name,self.Opis.value)
+    
+    def printSestavine(self):
+        assert isinstance(self.Sestavine,A)
+        print(self.Sestavine.name,self.Sestavine.value)
+    
+    def printSenzorika(self):
+#        assert isinstance(self.Sestavine,A)
+        for i in self.Senzorika:
+            assert isinstance(i,A)
+            print(i.name,i.value)
+    
+        
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    

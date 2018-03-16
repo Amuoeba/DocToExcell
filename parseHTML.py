@@ -8,7 +8,8 @@ import pandas as pd
 import numpy as np
 from collections import OrderedDict
 from FormattingTools import extractBasic
-from FormattingTools.attribute import Attribute as A
+from FormattingTools.helper_classes import Attribute as A
+from FormattingTools import markers
 
 
 class DocumentHTML():  
@@ -28,6 +29,9 @@ class DocumentHTML():
         self.Opis = extractBasic.opisIzdelka(self.FormatedRows)
         self.Sestavine = extractBasic.sestavine(self.FormatedRows)
         self.Senzorika = extractBasic.senzorika(self.FormatedRows)
+        self.Mikrobioloske = extractBasic.microbiological(self.FormatedRows)
+        self.FizKem = extractBasic.fizikalnoKemijske(self.FormatedRows)
+        self.HranilnaVrednost = extractBasic.hranilnaVrednost(self.FormatedRows)
         
     # Getting structured information for each row
     def findRows(self):
@@ -91,7 +95,7 @@ class DocumentHTML():
         
         return metaTextEnt
     
-    def formatRows(self):
+    def formatRows(self):        
         txtRows = []
         for row in self.rows:
             elements = [x[0] for x in row]
@@ -104,8 +108,27 @@ class DocumentHTML():
                     for r in list(range(rowIndex,rowIndex+ele[2]))[1:]:
                         txtRows[r].insert(ele[1],ele[0])
         #self.removeBlanks(list(OrderedDict.fromkeys(x)))
+        
+        
+        
+        toInsert = None
+        for row in txtRows:
+            for secMarker in markers.SECTION_MARKERS:
+                m = markers.SECTION_MARKERS[secMarker]
+                if bool(re.search(m,row[0])):
+                    toInsert = secMarker
+            if toInsert and not bool(re.search(markers.SECTION_MARKERS[toInsert],row[0])):
+                row.insert(0,toInsert)
+
+        
+        
+        
         txtRows = [self.removeBlanks(x) for x in txtRows if not all(i == '' for  i in x)]
         
+
+
+                
+                
         return txtRows
     
     def removeBlanks(self,row):
@@ -119,6 +142,7 @@ class DocumentHTML():
                 return self.botomUp(textele.parent)
         else:
             return None
+        
     # Extracting document info
     def FindDatumIzdaje(self):
         reDatum = re.compile("datum izdaje",re.IGNORECASE)
@@ -137,6 +161,10 @@ class DocumentHTML():
             return "Ni šifre"
     # Getting sections
     
+    
+    
+    
+    
     # Printing functions
     def printOpis(self):
         assert isinstance(self.Opis,A)
@@ -150,10 +178,29 @@ class DocumentHTML():
 #        assert isinstance(self.Sestavine,A)
         for i in self.Senzorika:
             assert isinstance(i,A)
-            print(i.name,i.value)
+            print(i.name,i.value)    
+
+
+    def Print_FizKem(self):
+        print(self.doc_name)
+        if self.FizKem:
+            for i in self.FizKem:
+                assert isinstance(i,A)
+                print("Name. ",i.name,"Value:",i.value,"Max:",i.Max,"Min:",i.Min,"Unit:",i.unit)
     
-        
+    def Print_Mikrobioloske(self):
+        print(self.doc_name)
+        if self.Mikrobioloske:
+            for i in self.Mikrobioloske:
+                assert isinstance(i,A)
+                print("Name. ",i.name,"Value:",i.value,"Max:",i.Max,"Min:",i.Min,"Unit:",i.unit)
     
+    def Print_HranilnaVrednost(self):
+        print(self.doc_name)
+        if self.HranilnaVrednost:
+            for j in self.HranilnaVrednost:
+                print(j[0].catRow,j[1],"Count:",j[2])
+                
     
     
     

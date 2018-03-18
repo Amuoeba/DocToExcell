@@ -186,20 +186,20 @@ class DocumentHTML():
         if self.FizKem:
             for i in self.FizKem:
                 assert isinstance(i,A)
-                print("Name. ",i.name,"Value:",i.value,"Max:",i.Max,"Min:",i.Min,"Unit:",i.unit)
+                print("Name: ",i.name,"Value:",i.value,"Max:",i.Max,"Min:",i.Min,"Unit:",i.unit)
     
     def Print_Mikrobioloske(self):
         print(self.doc_name)
         if self.Mikrobioloske:
             for i in self.Mikrobioloske:
                 assert isinstance(i,A)
-                print("Name. ",i.name,"Value:",i.value,"Max:",i.Max,"Min:",i.Min,"Unit:",i.unit)
+                print("Name: ",i.name,"Value:",i.value,"Max:",i.Max,"Min:",i.Min,"Unit:",i.unit)
     
     def Print_HranilnaVrednost(self):
         print(self.doc_name)
         if self.HranilnaVrednost:
             for j in self.HranilnaVrednost:
-                print(j[0].catRow,j[1],"Count:",j[2])
+                print(j[0].catRow,j[1],"Count:",j[2],j[3])
                 
     
     

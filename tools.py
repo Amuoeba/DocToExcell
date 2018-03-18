@@ -5,7 +5,6 @@ from datetime import datetime
 from parseHTML import DocumentHTML
 import FormattingTools.markers as markers
 
-
 def GetDate(doc):
     assert isinstance(doc, DocumentHTML)
     dateRe = re.compile(".*?([0-9]*)\.([0-9]*)\.([0-9]*)",re.IGNORECASE)
@@ -92,3 +91,7 @@ def countAtributes(documents,ignore = False,join=False):
 def removeEnglish(documents):
     """Remowes english documents based on whether the documnet date is defined"""
     return [x for x in documents if x.DatumIzdaje]
+
+
+    
+    

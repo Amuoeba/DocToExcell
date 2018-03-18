@@ -3,6 +3,7 @@ from Medex.parseHTML import DocumentHTML
 from FormattingTools import markers as markers
 from FormattingTools.helper_classes import Attribute as  A
 from FormattingTools.helper_classes import RowFormat as RowFormat
+from FormattingTools import aux_tools
 import re
 
 def opisIzdelka(rows):
@@ -109,15 +110,38 @@ def fizikalnoKemijske(rows):
 
 def hranilnaVrednost(rows):
     m = markers.EXTRACTION_MARKERS["Hranilna vrednost"]
+    hvRows = [x for x in rows if bool(re.search(m,x[0]))]
+    
     hranilnaVrednost = []
-    for row in rows:
-        if bool(re.search(m,row[0])):
-            count = 0
-            for ele in row:
-                c = len(re.findall(markers.HRANILNA["Na"],ele))
-                count = count + c
-            catRow = RowFormat(row)
-            hranilnaVrednost.append((catRow,catRow.raw_row,count))                
+    
+    if hvRows != []:
+        headerRow = hvRows[0]
+        catHeader = RowFormat(headerRow)
+        per = []
+        print(headerRow)
+        for entry in headerRow:
+            mPer = markers.HRANILNA["Per"]
+            matches = re.findall(mPer,entry)
+            if matches != []:
+                per = per + matches
+        
+        per = aux_tools.cleanPer(per)
+        print(per)
+        
+        for row in hvRows[1:]:        
+#            count = 0
+#            for ele in row:
+#                c = len(re.findall(markers.HRANILNA["Na"],ele))
+#                count = count + c
+            catRow = RowFormat(row)          
+            
+            if catRow.no_entries > 1:
+                name = row[1]
+                for entry in row[2:]:            
+                    hranilnaVrednost.append((catRow,catRow.raw_row,len(catRow.raw_row)-2))
+    else:
+        return None
+            
     if hranilnaVrednost == []:
         return None
     return hranilnaVrednost

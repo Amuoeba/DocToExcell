@@ -4,15 +4,16 @@ import re
 from FormattingTools import markers
 
 class Attribute():    
-    def __init__(self,name,value = None,Min = None,Max = None,unit = None):
+    def __init__(self,name,value = None,Min = None,Max = None,unit = None,per = None):
         self.name = name
         self.value = value
         self.Max = Max
         self.Min = Min
         self.unit = unit
+        self.per = per
     
     def nicePrint(self):
-        print("Name: ",self.name,"Value: ",self.value,"Max: ",self.Max,"Min: ",self.Min,"unit: ",self.unit )
+        print("Name: ",self.name,"Value: ",self.value,"Max: ",self.Max,"Min: ",self.Min,"unit: ",self.unit,"Per: ",self.per )
     
 
 class RowFormat():
@@ -40,14 +41,28 @@ class RowFormat():
 
 
 
-def getMatch(matches,variant = "min"):    
-    if len(matches) > 0 and not(len(matches) == 2 and (variant == "min" or variant == "max")):
+def getMatch(matches,variant = "min"):
+    
+    def matchAtDifferent(tupList):
+        index = []
+        for ele in tupList:
+            for j in enumerate(ele):
+                if j[1] == '':
+                    index.append(j[0])
+        if len(set(index)) == 1:
+            return False
+        else:
+            return True
+        
+    
+    if len(matches) > 0 and not(len(matches) == 2 and (variant == "min" or variant == "max") and matchAtDifferent(matches)):
         if isinstance(matches[0],tuple):
-            value = [x for x  in matches[0] if x != ""]
+            value = [[y for y in x if y != ''][0] for x in matches]
         else:
             value = matches
-    elif len(matches) == 2 and (variant == "min" or variant == "max"):
+    elif len(matches) == 2 and (variant == "min" or variant == "max") and matchAtDifferent(matches):
         extMatches = []
+        print(matches)
         for x in matches:
             if isinstance(x,tuple):
                 for i in x:

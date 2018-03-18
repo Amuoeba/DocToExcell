@@ -26,14 +26,14 @@ EXTRACTION_MARKERS = {"Opis izdelka":re.compile("opis izdelka",re.IGNORECASE),"S
 
 
 
-UNITS = re.compile("(?<=[0-9] |.[0-9])([a-ž%µ]{1,2}|kcal(?: *\/ *[a-z%µ]{1,2})*)(?![a-z])",re.IGNORECASE)
+UNITS = re.compile("(?<=[0-9] |.[0-9])([a-ž%µ]{1,3}(?: *\/ *[a-z%µ]{1,3})*|kcal)(?![a-z])",re.IGNORECASE)
 MAX = re.compile("(?:< *|≤ *|max\. *)+([0-9]+(?:[,.]*[0-9]*))|(?:(?:-|—|–) *)([0-9]+(?:[,.]*[0-9]*))",re.IGNORECASE)
 MIN = re.compile("(?:> *|≥ *|min\. *)+([0-9]+(?:[,.]*[0-9]*))|([0-9]+(?:[,.]*[0-9]*))(?: *(?:-|—|–))",re.IGNORECASE)
 
 
 MICROBIOLOGICAL = {"Value":re.compile("^(?:≤*|<*|max\.) *(neg.|[0-9]+(?:,|\.)*[0-9]*)",re.IGNORECASE),"Unit":re.compile("(?:[A-Za-z]{3})* *(?:\/ *)(?:[0-9]*(?:,|\.)*[0-9]* *[A-Za-z]*)",re.IGNORECASE)}
 FIZKEM = {"Value":re.compile("([0-9]+(?:,|\.)*[0-9]*)",re.IGNORECASE),"Vodilni cvetni prahovi":re.compile("vodilni cvetni prah")}
-HRANILNA = {"Na":re.compile("^na | na |^per | per ",re.IGNORECASE)}
+HRANILNA = {"Na":re.compile("^na | na |^per | per ",re.IGNORECASE),"Per":re.compile("[0-9]+[,.]*[0-9]* *(?:[a-ž%µ]{1,3}(?: *\/ *[a-z%µ]{1,3})*|kcal)(?![a-ž])",re.IGNORECASE)}
 
 
 

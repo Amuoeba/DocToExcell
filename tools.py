@@ -92,6 +92,14 @@ def removeEnglish(documents):
     """Remowes english documents based on whether the documnet date is defined"""
     return [x for x in documents if x.DatumIzdaje]
 
+def joinSets(documents):
+    joinedAttrSets = set([])
+    for doc in documents:
+        assert isinstance(doc,DocumentHTML)
+        joinedAttrSets=joinedAttrSets.union(doc.allAtributes)
+    
+    return joinedAttrSets
+
 
     
     

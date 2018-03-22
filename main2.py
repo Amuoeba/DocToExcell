@@ -4,7 +4,7 @@ from parseHTML import DocumentHTML
 from prepareUnstrructured import DocumentUnstructured
 import os
 import testTools as tt
-import createExcel
+from FormattingTools import prepareExcel
 import tools
 import re
 
@@ -26,3 +26,9 @@ documents = tools.removeEnglish(documents)
 documents = tools.FindMostRecent(documents)
 print(len(documents))
 attributes = tools.countAtributes(documents,ignore=True,join=True)
+allAttr = tools.joinSets(documents)
+
+
+wt = prepareExcel.ExcellWriter(documents)
+#print(wt.DF)
+wt.write("newTest.xlsx","newUnstructTest.xlsx")

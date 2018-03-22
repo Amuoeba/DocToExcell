@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 import os
 from bs4 import BeautifulSoup
 import re
@@ -12,8 +11,9 @@ from FormattingTools.helper_classes import Attribute as A
 from FormattingTools import markers
 
 
-class DocumentHTML():  
+class DocumentHTML():
     
+    DocType = "1: Normal Tabled"
     
     def __init__(self,doc_path):
         self.doc_name = doc_path
@@ -26,12 +26,20 @@ class DocumentHTML():
         # Atributes
         self.DatumIzdaje = self.FindDatumIzdaje()
         self.Sifra = self.FindCode()
+        self.Naziv = self.FindNaziv()
         self.Opis = extractBasic.opisIzdelka(self.FormatedRows)
         self.Sestavine = extractBasic.sestavine(self.FormatedRows)
         self.Senzorika = extractBasic.senzorika(self.FormatedRows)
         self.Mikrobioloske = extractBasic.microbiological(self.FormatedRows)
         self.FizKem = extractBasic.fizikalnoKemijske(self.FormatedRows)
         self.HranilnaVrednost = extractBasic.hranilnaVrednost(self.FormatedRows)
+        self.AktivneUcinkovine = extractBasic.aktivneUcinkovine(self.FormatedRows)
+        self.Pakiranje = extractBasic.pakiranje(self.FormatedRows)
+        self.Zakonodaja = extractBasic.zakonodaja(self.FormatedRows)
+        #Data Frames
+        self.dataFrames = self.PrepareDataFrames()
+        # All attributes
+        self.allAtributes = self.getAtributes()
         
     # Getting structured information for each row
     def findRows(self):
@@ -106,11 +114,12 @@ class DocumentHTML():
             for ele in row[1]:
                 if ele[2] > 1:
                     for r in list(range(rowIndex,rowIndex+ele[2]))[1:]:
-                        txtRows[r].insert(ele[1],ele[0])
+                        txtRows[r].insert(ele[1],ele[0])        
         #self.removeBlanks(list(OrderedDict.fromkeys(x)))
-        
-        
-        
+        txtRows = [self.removeBlanks(x) for x in txtRows if not all(i == '' for  i in x)]
+#        if self.doc_name == "./RealDataHTML2/SP 32313020 APISIRUP (JUNIOR) 140 ML AR-AN.html":
+#            for i in txtRows:
+#                print(i)        
         toInsert = None
         for row in txtRows:
             for secMarker in markers.SECTION_MARKERS:
@@ -118,17 +127,7 @@ class DocumentHTML():
                 if bool(re.search(m,row[0])):
                     toInsert = secMarker
             if toInsert and not bool(re.search(markers.SECTION_MARKERS[toInsert],row[0])):
-                row.insert(0,toInsert)
-
-        
-        
-        
-        txtRows = [self.removeBlanks(x) for x in txtRows if not all(i == '' for  i in x)]
-        
-
-
-                
-                
+                row.insert(0,toInsert)               
         return txtRows
     
     def removeBlanks(self,row):
@@ -149,23 +148,115 @@ class DocumentHTML():
         for row in self.FormatedRows:
             for item in row:
                 if bool(reDatum.match(item)):
-                    return item
+                    return A("Datum Izdaje",value=item)
         return None
     
     def FindCode(self):
         reCode = re.compile("(?:Šifra:)(?: *)([0-9]*)",re.IGNORECASE)
         match = re.search(reCode,self.FormatedRows[0][1])
         if bool(match):
-            return match.group(1)
+            return A("Šifra",match.group(1))
         else:
-            return "Ni šifre"
+            return None
+    def FindNaziv(self):
+        reCode = re.compile("(?<=PROIZVODA )(.*)(?= Šifra)",re.IGNORECASE)
+        match = re.search(reCode,self.FormatedRows[0][1])
+        if bool(match):
+            return A("Naziv",match.group(0))
+        else:
+            return None
+        
+        
+    # Getting a list of all atributes
+    def getAtributes(self):
+        attrSet = set([])
+        if self.Opis:
+            attrSet.add(self.Opis.name)
+        if self.Sestavine:
+            attrSet.add(self.Sestavine.name)
+        if self.Senzorika:
+            for a in self.Senzorika:
+                assert isinstance(a,A)
+                if a.name not in attrSet:
+                    attrSet.add(a.name)
+        if self.Mikrobioloske:
+            for a in self.Mikrobioloske:
+                assert isinstance(a,A)
+                if a.name not in attrSet:
+                    attrSet.add(a.name)
+        if self.FizKem:
+            for a in self.FizKem:
+                assert isinstance(a,A)
+                if a.name not in attrSet:
+                    attrSet.add(a.name)
+        if self.AktivneUcinkovine:                    
+            for a in self.AktivneUcinkovine:
+                assert isinstance(a,A)
+                if a.name not in attrSet:
+                    attrSet.add(a.name)
+        if self.HranilnaVrednost:
+            for a in self.HranilnaVrednost:
+                assert isinstance(a,A)
+                if a.name not in attrSet:
+                    attrSet.add(a.name)
+        if self.Pakiranje:                    
+            for a in self.Pakiranje:
+                assert isinstance(a,A)
+                if a.name not in attrSet:
+                    attrSet.add(a.name)
+        return attrSet
+        
     # Getting sections
+    #Preparing dataframes
+    def PrepareDataFrames(self):
+        dataframes = {}
+        dataframes["Šifra"] = self.prepSifra()
+        dataframes["Naziv"] = self.prepNaziv()
+#        dataframes["Skupina"] = DataFrame({"Skupina":["/"]})
+        dataframes["Opis"] = self.prepOpis()
+#        dataframes["Sestavine"] = DataFrame({"Sestavine":[self.Sestavine]})
+#        dataframes["Izgled"] = DataFrame({"Izgled":[self.Izgled]})
+#        dataframes["Okus In Vonj"] = DataFrame({"Okus in Vonj":[self.Vonj]})
+#        dataframes["Zakonodaja"] = DataFrame({"Zakonodaja":[self.Zakonodaja]})
+#        dataframes["Mikrobiološke Zahteve"] = self.HEADER_DFMikrobioloske()
+#        dataframes["Fizikalno Kemijske Zahteve"] = self.HEADER_DFfizikalno_kemijske()
+#        dataframes["Hranilna Vrednost"] = self.HEADER_DFhranilna_vrednost()
+#        dataframes["Aktivne učinkovine"] = self.HEADER_DFaktivne_ucinkovine()
+#        dataframes["Pakiranje"] = self.DFpakiranje()        
+        return dataframes
     
+    def prepSifra(self):
+        if self.Sifra:
+            columns = [self.Sifra.name]
+            values = [self.Sifra.value]
+            return DataFrame([values],columns=columns)
+        else:
+            return DataFrame([np.NaN])
     
-    
+    def prepNaziv(self):
+        if self.Naziv:
+            columns = [self.Naziv.name]
+            values = [self.Naziv.value]
+            return DataFrame([values],columns=columns)
+        else:
+            return DataFrame([np.NaN])
+        
+    def prepOpis(self):
+        if self.Opis:
+            columns = [self.Opis.name]
+            values = [self.Opis.value]
+            return DataFrame([values],columns=columns)
+        else:
+            return DataFrame([np.NaN])
     
     
     # Printing functions
+    def printSifra(self):
+        self.Sifra.nicePrint()
+        
+    def printDatumIzdaje(self):
+        self.DatumIzdaje.nicePrint()
+    
     def printOpis(self):
         assert isinstance(self.Opis,A)
         print(self.Opis.name,self.Opis.value)
@@ -186,22 +277,47 @@ class DocumentHTML():
         if self.FizKem:
             for i in self.FizKem:
                 assert isinstance(i,A)
-                print("Name: ",i.name,"Value:",i.value,"Max:",i.Max,"Min:",i.Min,"Unit:",i.unit)
+                print("Name: ",i.name,"Value:",i.value,"Max:",i.Max,"Min:",i.Min,"Unit:",i.unit,"PDV",i.pdv)
     
     def Print_Mikrobioloske(self):
         print(self.doc_name)
         if self.Mikrobioloske:
             for i in self.Mikrobioloske:
                 assert isinstance(i,A)
-                print("Name: ",i.name,"Value:",i.value,"Max:",i.Max,"Min:",i.Min,"Unit:",i.unit)
+                print("Name: ",i.name,"Value:",i.value,"Max:",i.Max,"Min:",i.Min,"Unit:",i.unit,"PDV",i.pdv)
     
     def Print_HranilnaVrednost(self):
         print(self.doc_name)
         if self.HranilnaVrednost:
-            for j in self.HranilnaVrednost:
-                print(j[0].catRow,j[1],"Count:",j[2],j[3])
+            for i in self.HranilnaVrednost:
+                assert isinstance(i,A)
+                print("Name: ",i.name,"Value:",i.value,"Max:",i.Max,"Min:",i.Min,"Unit:",i.unit,"Per:",i.per,"PDV",i.pdv,"CommonName:",i.commonName)
                 
+    def Print_AktivneUcinkovine(self):
+#        print(self.doc_name)
+#        if self.AktivneUcinkovine:
+##            print(self.AktivneUcinkovine[0])
+#            for i in self.AktivneUcinkovine:
+#                print(i[1])
+        print(self.doc_name)
+        if self.AktivneUcinkovine:
+            for i in self.AktivneUcinkovine:
+                assert isinstance(i,A)
+                print("Name: ",i.name,"Value:",i.value,"Max:",i.Max,"Min:",i.Min,"Unit:",i.unit,"Per:",i.per,"PDV",i.pdv)
     
+    def Print_Pakiranje(self):
+        print(self.doc_name)
+        if self.Pakiranje:
+            for i in self.Pakiranje:
+                assert isinstance(i,A)
+                print("Name: ",i.name,"Value:",i.value)
+
+    def Print_Zakonodaja(self):
+        print(self.doc_name)
+        if self.Zakonodaja:
+            for i in self.Zakonodaja:
+                assert isinstance(i,A)
+                print("Name: ",i.name,"Value:",i.value)
     
     
     

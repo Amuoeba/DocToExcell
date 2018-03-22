@@ -20,6 +20,19 @@ def cleanPer(perList):
             if (quotient > 0.75 and quotient < 1.0) or (quotient < 1.35 and quotient > 1.0):
                 toRemove.append(y[0])
     toRemove.sort(reverse=True)
+#    print("###",toRemove)
     for i in toRemove:
         perList.pop(i)
     return perList
+
+def chunkList(l,n):    
+    n=int(n)
+    chunked=[]
+    while l:
+        chunk = []
+        for i in range(n):
+            if l:
+                x = l.pop(0)
+                chunk.append(x)
+        chunked.append(chunk)
+    return chunked

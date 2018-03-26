@@ -9,6 +9,8 @@ from collections import OrderedDict
 from FormattingTools import extractBasic
 from FormattingTools.helper_classes import Attribute as A
 from FormattingTools import markers
+from FormattingTools import aux_tools
+from FormattingTools.aux_tools import listToString as lts
 
 
 class DocumentHTML():
@@ -214,15 +216,16 @@ class DocumentHTML():
         dataframes["Naziv"] = self.prepNaziv()
 #        dataframes["Skupina"] = DataFrame({"Skupina":["/"]})
         dataframes["Opis"] = self.prepOpis()
-#        dataframes["Sestavine"] = DataFrame({"Sestavine":[self.Sestavine]})
+        dataframes["Sestavine"] = self.prepSestavine()
+        dataframes["Senzorika"] = self.prepSenzorika()
 #        dataframes["Izgled"] = DataFrame({"Izgled":[self.Izgled]})
 #        dataframes["Okus In Vonj"] = DataFrame({"Okus in Vonj":[self.Vonj]})
-#        dataframes["Zakonodaja"] = DataFrame({"Zakonodaja":[self.Zakonodaja]})
-#        dataframes["Mikrobiološke Zahteve"] = self.HEADER_DFMikrobioloske()
-#        dataframes["Fizikalno Kemijske Zahteve"] = self.HEADER_DFfizikalno_kemijske()
-#        dataframes["Hranilna Vrednost"] = self.HEADER_DFhranilna_vrednost()
-#        dataframes["Aktivne učinkovine"] = self.HEADER_DFaktivne_ucinkovine()
-#        dataframes["Pakiranje"] = self.DFpakiranje()        
+        dataframes["Zakonodaja"] = self.prepZakonodaja()
+        dataframes["Mikrobiološke Zahteve"] = self.prepMikrobioloske()
+        dataframes["Fizikalno Kemijske Zahteve"] = self.prepFizikalne()
+        dataframes["Hranilna Vrednost"] = self.prepHranilnaVrednost()
+        dataframes["Aktivne učinkovine"] = self.prepAktivne()
+        dataframes["Pakiranje"] = self.prepPakiranje()     
         return dataframes
     
     def prepSifra(self):
@@ -248,7 +251,245 @@ class DocumentHTML():
             return DataFrame([values],columns=columns)
         else:
             return DataFrame([np.NaN])
+        
+    def prepSestavine(self):
+        if self.Opis:
+            columns = [self.Sestavine.name]
+            values = [self.Sestavine.value]
+            return DataFrame([values],columns=columns)
+        else:
+            return DataFrame([np.NaN])
     
+    def prepSenzorika(self):
+        if self.Senzorika:
+            columns = []
+            values = []
+            for item in self.Senzorika:
+                assert isinstance(item,A)
+                columns.append(item.commonName)
+                values.append(item.value)      
+            return DataFrame([values],columns=columns)
+        else:
+            return DataFrame([np.NaN])
+    
+    def prepZakonodaja(self):
+        if self.Zakonodaja:
+            columns = []
+            values = []
+            for item in self.Zakonodaja:
+                assert isinstance(item,A)
+                columns.append(item.name + " value")
+                values.append(item.value)                    
+                
+            return DataFrame([values],columns=columns)
+        else:
+            return DataFrame([np.NaN])
+    
+    def prepMikrobioloske(self):
+        if self.Mikrobioloske:
+            columns = []
+            values = []            
+            for item in self.Mikrobioloske:
+                assert isinstance(item,A)
+                columns.append(item.commonName + " [value]")
+                values.append(item.value)                
+                columns.append(item.commonName + " [max]")
+                values.append(item.Max)                
+                columns.append(item.commonName + " [min]")
+                values.append(item.Min)                
+                columns.append(item.commonName + " [unit]")
+                values.append(item.unit)            
+            return DataFrame([values],columns=columns)            
+        else:
+            return DataFrame([np.NaN])
+    
+    def prepHranilnaVrednost(self):       
+        if self.HranilnaVrednost:
+            columns = []
+            values = []
+            
+            allreadyIn = set([])
+            for item in self.HranilnaVrednost:
+                assert isinstance(item,A)
+                name = item.commonName
+                value = item.value
+                Max = item.Max
+                Min = item.Min
+                pdv = item.pdv
+                per = item.per
+                unit = item.unit
+                
+                longest = aux_tools.findLongest([value,Max,Min,unit])
+                if unit:
+                    lenUnit = len(unit)
+                else:
+                    lenUnit = 0
+                
+                if lenUnit > 1 or lenUnit != len(longest) and name not in allreadyIn:
+                    for ind in range(lenUnit):
+                        n = name + " " + str(ind)
+                        if len(value) >= ind and n not in allreadyIn:
+                            v = [value[ind]]
+                            u = [unit[ind]]
+                            columns.append("[HV] " + n + " [value]")
+                            values.append(v)
+                            columns.append("[HV] " + n + " [per]")
+                            values.append(per)
+#                            columns.append("[HV] " + n + " [max]")
+#                            values.append(Max)
+#                            columns.append("[HV] " + n + " [min]")
+#                            values.append(Min)
+                            columns.append("[HV] " + n + " [unit]")
+                            values.append(u)
+                            columns.append("[HV] " + n + " [pdv]")
+                            values.append(pdv)
+                            allreadyIn.add(n)
+                else:
+                    if name not in allreadyIn:
+                        columns.append("[HV] " + name + " [value]")
+                        values.append(value)
+                        columns.append("[HV] " + name + " [per]")
+                        values.append(per)
+                        columns.append("[HV] " + name + " [max]")
+                        values.append(Max)
+                        columns.append("[HV] " + name + " [min]")
+                        values.append(Min)
+                        columns.append("[HV] " + name + " [unit]")
+                        values.append(unit)
+                        columns.append("[HV] " + name + " [pdv]")
+                        values.append(pdv)                    
+                        allreadyIn.add(name)
+                    
+            return DataFrame([values],columns=columns)  
+        else:
+            return DataFrame([np.NaN])
+    
+    def prepFizikalne(self):
+        if self.FizKem:
+            columns = []
+            values = []
+            
+            allreadyIn = set([])
+            for item in self.FizKem:
+                assert isinstance(item,A)
+                name = item.commonName
+                value = item.value
+                Max = item.Max
+                Min = item.Min
+                pdv = item.pdv
+                per = item.per
+                unit = item.unit
+                
+                if name not in allreadyIn:
+                    columns.append("[FK] " + name + " [value]")
+                    values.append(value)
+                    columns.append("[FK] " + name + " [max]")
+                    values.append(Max)
+                    columns.append("[FK] " + name + " [min]")
+                    values.append(Min)
+                    columns.append("[FK] " + name + " [unit]")
+                    values.append(unit)
+                    columns.append("[FK] " + name + " [pdv]")
+                    values.append(pdv)
+                    
+                    allreadyIn.add(name)
+                    
+            return DataFrame([values],columns=columns)  
+        else:
+            return DataFrame([np.NaN])
+
+    def prepAktivne(self):
+        if self.AktivneUcinkovine:
+            columns = []
+            values = []
+            
+            allreadyIn = set([])
+            for item in self.AktivneUcinkovine:
+                assert isinstance(item,A)
+                name = item.commonName
+                value = item.value
+                Max = item.Max
+                Min = item.Min
+                pdv = item.pdv
+                per = item.per
+                unit = item.unit
+                
+                longest = aux_tools.findLongest([value,Max,Min,unit])
+                if unit:
+                    lenUnit = len(unit)
+                else:
+                    lenUnit = 0
+                
+                if lenUnit > 1 or lenUnit != len(longest) and name not in allreadyIn:
+                    for ind in range(lenUnit):
+                        n = name + " " + str(ind)
+                        if len(value) >= ind and n not in allreadyIn:
+                            v = [value[ind]]
+                            u = [unit[ind]]
+                            columns.append("[A] " + n + " [value]")
+                            values.append(v)
+                            columns.append("[A] " + n + " [per]")
+                            values.append(per)
+#                            columns.append("[HV] " + n + " [max]")
+#                            values.append(Max)
+#                            columns.append("[HV] " + n + " [min]")
+#                            values.append(Min)
+                            columns.append("[A] " + n + " [unit]")
+                            values.append(u)
+                            columns.append("[A] " + n + " [pdv]")
+                            values.append(pdv)
+                            allreadyIn.add(n)
+                
+                else:
+                    if name not in allreadyIn:
+                        columns.append("[A] " + name + " [value]")
+                        values.append(value)
+                        columns.append("[A] " + name + " [max]")
+                        values.append(Max)
+                        columns.append("[A] " + name + " [min]")
+                        values.append(Min)
+                        columns.append("[A] " + name + " [unit]")
+                        values.append(unit)
+                        columns.append("[A] " + name + " [pdv]")
+                        values.append(pdv)                    
+                        allreadyIn.add(name)
+                    
+            return DataFrame([values],columns=columns)  
+        else:
+            return DataFrame([np.NaN])
+    def prepPakiranje(self):
+        if self.Pakiranje:
+            columns = []
+            values = []
+            
+            allreadyIn = set([])
+            for item in self.Pakiranje:
+                assert isinstance(item,A)
+                name = item.commonName
+                value = item.value
+                Max = item.Max
+                Min = item.Min
+                pdv = item.pdv
+                per = item.per
+                unit = item.unit
+                
+                if name not in allreadyIn:
+                    columns.append("[PAK] " + name + " [value]")
+                    values.append(value)
+                    columns.append("[PAK] " + name + " [max]")
+                    values.append(Max)
+                    columns.append("[PAK] " + name + " [min]")
+                    values.append(Min)
+                    columns.append("[PAK] " + name + " [unit]")
+                    values.append(unit)
+                    columns.append("[PAK] " + name + " [pdv]")
+                    values.append(pdv)
+                    
+                    allreadyIn.add(name)
+                    
+            return DataFrame([values],columns=columns)  
+        else:
+            return DataFrame([np.NaN])
     
     # Printing functions
     def printSifra(self):
@@ -269,7 +510,7 @@ class DocumentHTML():
 #        assert isinstance(self.Sestavine,A)
         for i in self.Senzorika:
             assert isinstance(i,A)
-            print(i.name,i.value)    
+            print(i.commonName)  
 
 
     def Print_FizKem(self):

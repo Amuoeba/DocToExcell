@@ -36,3 +36,23 @@ def chunkList(l,n):
                 chunk.append(x)
         chunked.append(chunk)
     return chunked
+
+def findLongest(lists):
+    if isinstance(lists,list):
+        longest = []
+        for l in lists:
+            if l == None:
+                l = []
+            if len(l)>len(longest):
+                longest = l
+        return longest
+    else:
+        return None
+
+
+def listToString(l):
+    if l and isinstance(l,list) and len(l) == 1:
+        return l[0]
+    else:
+        return l
+    

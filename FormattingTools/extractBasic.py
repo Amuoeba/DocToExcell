@@ -28,8 +28,7 @@ def senzorika(rows):
             if bool(re.search(m,row[0])):
                 attribute = row[1]
                 value = row[2]
-                senzorika.append(A(attribute,value))
-    
+                senzorika.append(A(attribute,value=value))    
     if senzorika == []:
         return None
     return senzorika

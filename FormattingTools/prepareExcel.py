@@ -38,6 +38,9 @@ class ExcellWriter():
                     else:
                         self.UnstructDF[at] = self.UnstructDF[at] +[val] 
         for section in DFs:
+#            print(section)
+#            for i in DFs[section]:
+#                print(i.columns)
             DFs[section] = pd.concat(DFs[section],axis=0,ignore_index=True)        
         return DFs
     
@@ -49,8 +52,7 @@ class ExcellWriter():
         return df[cols]
     
     def buildIndex(self):
-        sectionOrder = ["Šifra","Naziv","Skupina","Opis","Sestavine","Izgled",
-                 "Okus In Vonj","Zakonodaja","Mikrobiološke Zahteve",
+        sectionOrder = ["Šifra","Naziv","Skupina","Opis","Sestavine","Senzorika","Zakonodaja","Mikrobiološke Zahteve",
                  "Fizikalno Kemijske Zahteve","Hranilna Vrednost","Aktivne učinkovine","Pakiranje"]
         indList = []
         for s in sectionOrder:
@@ -59,10 +61,11 @@ class ExcellWriter():
         return pd.Index(indList)
     
     def write(self,path,path2):
+        DF = self.DF.dropna(axis=1,how="all")
         writer = pd.ExcelWriter(path,engine="xlsxwriter")
         writerUnstructured = pd.ExcelWriter(path2,engine="openpyxl")
         Ud = pd.DataFrame(self.UnstructDF)
-        self.DF.to_excel(writer, index=False,sheet_name='Sheet1')
+        DF.to_excel(writer, index=False,sheet_name='Sheet1')
         Ud.to_excel(writerUnstructured,index=False)
         
         ########## Just formating##############################

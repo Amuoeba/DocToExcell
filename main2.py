@@ -32,3 +32,5 @@ allAttr = tools.joinSets(documents)
 wt = prepareExcel.ExcellWriter(documents)
 #print(wt.DF)
 wt.write("newTest.xlsx","newUnstructTest.xlsx")
+
+#print(list(wt.DF.columns.values))
